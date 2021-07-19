@@ -46,8 +46,8 @@ public:
     };
     typedef eosio::multi_index<
         eosio::name("mints"), _mint_asset,
-        eosio::indexed_by<"template"_n, const_mem_fun<_mint_asset, uint64_t, &_mint_asset::secondary_key_0>>
-        > _mints;
+        eosio::indexed_by<"template"_n, const_mem_fun<_mint_asset, uint64_t, &_mint_asset::secondary_key_0>>>
+        _mints;
 
     [[eosio::action]] void newgame(eosio::name owner);
     [[eosio::action]] void verify(eosio::name owner, std::vector<NFT> owned_assets);
@@ -64,6 +64,7 @@ public:
 
     [[eosio::action]] void rmreward(uint64_t completions);
     [[eosio::action]] void addreward(uint64_t completions, eosio::name contract, eosio::asset amount);
+
 private:
     struct [[eosio::table("config")]] _config_entity
     {

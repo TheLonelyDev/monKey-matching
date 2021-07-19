@@ -98,11 +98,11 @@
     require_auth(get_self());
 
     get_rewards().emplace(get_self(), [&](auto &row)
-                    {
-                        row.completions = completions;
-                        row.contract = contract;
-                        row.amount = amount;
-                    });
+                          {
+                              row.completions = completions;
+                              row.contract = contract;
+                              row.amount = amount;
+                          });
 }
 
 [[eosio::action]] void monkeygame::rmmint(uint64_t index)
@@ -122,23 +122,22 @@
 
     auto iterator = mints.find(index);
 
-if( iterator == mints.end() )
-  {
-    mints.emplace(get_self(), [&](auto &row)
-                    {
-                        row.index = index;
-                        row.template_id = template_id;
-                        row.mints.assign(new_mints.begin(), new_mints.end());
-                    });
-  }
-  else {
-    mints.modify(iterator, get_self(), [&]( auto& row )
-                    {
-                        row.index = index;
-                        row.template_id = template_id;
-                        row.mints.assign(new_mints.begin(), new_mints.end());
-                    });
-  }
-
-
+    if (iterator == mints.end())
+    {
+        mints.emplace(get_self(), [&](auto &row)
+                      {
+                          row.index = index;
+                          row.template_id = template_id;
+                          row.mints.assign(new_mints.begin(), new_mints.end());
+                      });
+    }
+    else
+    {
+        mints.modify(iterator, get_self(), [&](auto &row)
+                     {
+                         row.index = index;
+                         row.template_id = template_id;
+                         row.mints.assign(new_mints.begin(), new_mints.end());
+                     });
+    }
 }

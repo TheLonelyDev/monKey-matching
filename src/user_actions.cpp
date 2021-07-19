@@ -104,18 +104,19 @@ std::vector<uint64_t> random_set(
 
   // Get the owned assets
   auto assets = atomicassets::get_assets(owner);
-  for (const NFT& nft : owned_assets)
+  for (const NFT &nft : owned_assets)
   {
     assets.require_find(nft.asset_id, "You do not own all assets");
     mints.require_find(nft.index, "Mint index not found");
-    
+
     auto entry = mints.get(nft.index);
 
-    auto iterator = std::find_if(entry.mints.begin(), entry.mints.end(), [&id = nft.asset_id](const MINT& mint) -> bool { return id == mint.asset_id; });
+    auto iterator = std::find_if(entry.mints.begin(), entry.mints.end(), [&id = nft.asset_id](const MINT &mint) -> bool
+                                 { return id == mint.asset_id; });
 
     eosio::check(iterator == entry.mints.end(), "Asset mint number not found");
     owned.push_back(iterator->mint);
-  }  
+  }
 
   // TODO: improve
   // Sort the collected & to_collect vector
