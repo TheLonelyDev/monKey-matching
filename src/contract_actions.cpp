@@ -83,30 +83,6 @@
     config.set(new_config, get_self());
 }
 
-[[eosio::action]] void monkeygame::rmwhitelist(uint64_t key)
-{
-    require_auth(get_self());
-
-    auto whitelist = get_whitelist();
-    auto entity = whitelist.require_find(key, "Entity does not exist");
-
-    whitelist.erase(entity);
-}
-
-[[eosio::action]] void monkeygame::addwhitelist(eosio::name collection_name, eosio::name schema_name, uint64_t template_id)
-{
-    require_auth(get_self());
-
-    auto whitelist = get_whitelist();
-
-    whitelist.emplace(get_self(), [&](auto &row)
-                      {
-                          //row.collection = collection;
-                          //row.schema = schema;
-                          row.template_id = template_id;
-                      });
-}
-
 [[eosio::action]] void monkeygame::rmreward(uint64_t completions)
 {
     require_auth(get_self());
@@ -121,12 +97,48 @@
 {
     require_auth(get_self());
 
-    auto rewards = get_rewards();
-
-    rewards.emplace(get_self(), [&](auto &row)
+    get_rewards().emplace(get_self(), [&](auto &row)
                     {
                         row.completions = completions;
                         row.contract = contract;
                         row.amount = amount;
                     });
+}
+
+[[eosio::action]] void monkeygame::rmmint(uint64_t index)
+{
+    require_auth(get_self());
+
+    auto mints = get_mints();
+    auto entity = mints.require_find(index, "Entity does not exist");
+
+    mints.erase(entity);
+}
+
+[[eosio::action]] void monkeygame::addmint(uint64_t index, uint64_t template_id, std::vector<MINT> new_mints)
+{
+    require_auth(get_self());
+    auto mints = get_mints();
+
+    auto iterator = mints.find(index);
+
+if( iterator == mints.end() )
+  {
+    mints.emplace(get_self(), [&](auto &row)
+                    {
+                        row.index = index;
+                        row.template_id = template_id;
+                        row.mints.assign(new_mints.begin(), new_mints.end());
+                    });
+  }
+  else {
+    mints.modify(iterator, get_self(), [&]( auto& row )
+                    {
+                        row.index = index;
+                        row.template_id = template_id;
+                        row.mints.assign(new_mints.begin(), new_mints.end());
+                    });
+  }
+
+
 }
