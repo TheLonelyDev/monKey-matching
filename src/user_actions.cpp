@@ -89,19 +89,35 @@ std::vector<uint64_t> random_set(
 
     @auth caller
 */
-[[eosio::action]] void monkeygame::verify(eosio::name owner)
+[[eosio::action]] void monkeygame::verify(eosio::name owner, std::vector<NFT> owned_assets)
 {
   eosio::require_auth(owner);
   maintenace_check();
 
   auto games = get_games();
   auto users = get_users();
+  auto mints = get_mints();
   auto game = games.require_find(owner.value, "You have no running game");
   auto user = users.require_find(owner.value, "No user found");
 
-  // Get the owned assets
   std::vector<uint64_t> owned = {1, 2, 3, 4}; //  TODO: atomicasset ownership
 
+  // Get the owned assets
+  auto assets = atomicassets::get_assets(owner);
+  for (const NFT& nft : owned_assets)
+  {
+    assets.require_find(nft.asset_id, "You do not own all assets");
+    mints.require_find(nft.index, "Mint index not found");
+    
+    auto entry = mints.get(nft.index);
+
+    auto iterator = std::find_if(entry.mints.begin(), entry.mints.end(), [&id = nft.asset_id](const MINT& mint) -> bool { return id == mint.asset_id; });
+
+    eosio::check(iterator == entry.mints.end(), "Asset mint number not found");
+    owned.push_back(iterator->mint);
+  }  
+
+  // TODO: improve
   // Sort the collected & to_collect vector
   std::vector<uint64_t> collected(game->collected);
   std::vector<uint64_t> to_collect(game->to_collect);
