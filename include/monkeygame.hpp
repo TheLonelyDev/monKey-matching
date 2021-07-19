@@ -20,8 +20,37 @@ public:
         std::string reward_memo = "Set completion reward";
     };
 
+    struct NFT
+    {
+        uint64_t asset_id;
+        uint64_t index;
+    };
+
+    struct MINT
+    {
+        uint64_t mint;
+        uint64_t asset_id;
+    };
+
+    struct [[eosio::table("mints")]] _mint_asset
+    {
+        uint64_t index;
+
+        uint64_t template_id;
+
+        std::vector<MINT> mints;
+
+        uint64_t primary_key() const { return index; };
+
+        uint64_t secondary_key_0() const { return template_id; };
+    };
+    typedef eosio::multi_index<
+        eosio::name("mints"), _mint_asset,
+        eosio::indexed_by<"template"_n, const_mem_fun<_mint_asset, uint64_t, &_mint_asset::secondary_key_0>>
+        > _mints;
+
     [[eosio::action]] void newgame(eosio::name owner);
-    [[eosio::action]] void verify(eosio::name owner);
+    [[eosio::action]] void verify(eosio::name owner, std::vector<NFT> owned_assets);
     [[eosio::action]] void complete(eosio::name owner);
 
     [[eosio::action]] void init();
@@ -30,12 +59,11 @@ public:
     [[eosio::action]] void setsalt(std::string salt);
     [[eosio::action]] void setparams(cfg_params params);
 
-    [[eosio::action]] void rmwhitelist(uint64_t key);
-    [[eosio::action]] void addwhitelist(eosio::name collection_name, eosio::name schema_name, uint64_t template_id);
+    [[eosio::action]] void rmmint(uint64_t index);
+    [[eosio::action]] void addmint(uint64_t index, uint64_t template_id, std::vector<MINT> new_mints);
 
     [[eosio::action]] void rmreward(uint64_t completions);
     [[eosio::action]] void addreward(uint64_t completions, eosio::name contract, eosio::asset amount);
-
 private:
     struct [[eosio::table("config")]] _config_entity
     {
@@ -64,18 +92,6 @@ private:
     };
     typedef eosio::multi_index<eosio::name("users"), _user_entity> _users;
 
-    struct [[eosio::table("whitelist")]] _whitelist_entity
-    {
-        uint64_t key;
-
-        eosio::name collection_name;
-        eosio::name schema_name;
-        uint64_t template_id;
-
-        uint64_t primary_key() const { return key; };
-    };
-    typedef eosio::multi_index<eosio::name("whitelist"), _whitelist_entity> _whitelist;
-
     struct [[eosio::table("rewards")]] _reward_entity
     {
         uint64_t completions;
@@ -85,7 +101,6 @@ private:
 
         uint64_t primary_key() const { return completions; };
     };
-
     typedef eosio::multi_index<eosio::name("rewards"), _reward_entity> _rewards;
 
     _games get_games()
@@ -103,14 +118,14 @@ private:
         return _config(get_self(), get_self().value);
     }
 
-    _whitelist get_whitelist()
-    {
-        return _whitelist(get_self(), get_self().value);
-    }
-
     _rewards get_rewards()
     {
         return _rewards(get_self(), get_self().value);
+    }
+
+    _mints get_mints()
+    {
+        return _mints(get_self(), get_self().value);
     }
 
     void init_user(eosio::name owner);
@@ -128,6 +143,6 @@ EOSIO_DISPATCH(monkeygame,
 
                    (init)(destruct)(maintenance)(setsalt)(setparams)
 
-                       (rmwhitelist)(addwhitelist)
+                       (rmmint)(addmint)
 
                            (rmreward)(addreward));
