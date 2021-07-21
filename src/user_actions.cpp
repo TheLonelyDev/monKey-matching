@@ -97,10 +97,12 @@ std::vector<uint16_t> random_set(
   auto games = get_games();
   auto users = get_users();
   auto mints = get_mints();
+  auto config = get_config().get();
   auto game = games.require_find(owner.value, "You have no running game");
   auto user = users.require_find(owner.value, "No user found");
 
-  std::vector<uint64_t> owned = {1, 2, 3, 4}; //  TODO: atomicasset ownership
+  std::vector<uint16_t> owned = {};
+  //std::vector<uint16_t> owned = generate_set_with_mints();
 
   // Get the owned assets
   auto assets = atomicassets::get_assets(owner);
@@ -114,7 +116,7 @@ std::vector<uint16_t> random_set(
     auto iterator = std::find_if(entry.mints.begin(), entry.mints.end(), [&id = nft.asset_id](const MINT &mint) -> bool
                                  { return id == mint.asset_id; });
 
-    eosio::check(iterator == entry.mints.end(), "Asset mint number not found");
+    eosio::check(iterator != entry.mints.end(), "Asset mint number not found");
     owned.push_back(iterator->mint);
   }
 
@@ -133,7 +135,8 @@ std::vector<uint16_t> random_set(
   for (auto elem : remainder)
   {
     // If the mint is owned, add it to the collected vector
-    if (std::find(owned.begin(), owned.end(), elem) != owned.end())
+    if (std::find_if(owned.begin(), owned.end(), [&elem = elem, &mint_offset = config.params.mint_offset](const uint16_t &mint) -> bool
+                     { return std::abs(int(mint - elem)) <= mint_offset; }) != owned.end())
     {
       collected.push_back(elem);
     }
