@@ -3,6 +3,7 @@
 #include <string>
 #include <math.h> 
 #include <algorithm>
+#include <cstdlib>
 
 // Contracts actions
 #include "contract_actions.cpp"

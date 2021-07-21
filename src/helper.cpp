@@ -5,14 +5,14 @@ struct IncGenerator
   int operator()() { return current_++; }
 };
 
-std::vector<uint64_t> monkeygame::generate_set_with_mints()
+std::vector<uint16_t> monkeygame::generate_set_with_mints()
 {
   auto options = get_config().get().params;
-  uint64_t min = options.min_mint;
-  uint64_t max = options.max_mint;
+  uint16_t min = options.min_mint;
+  uint16_t max = options.max_mint;
   uint64_t size = max - min + 1;
 
-  std::vector<uint64_t> set(size);
+  std::vector<uint16_t> set(size);
   IncGenerator generator(min);
   std::generate(set.begin(), set.end(), generator);
 

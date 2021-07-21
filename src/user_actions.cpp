@@ -2,18 +2,18 @@
     Generate a unique random set.
 
     @param {ranom} generator - random generator instance with seed
-    @param {vector<uint64_t>} input - input vector to use as a source
+    @param {vector<uint16_t>} input - input vector to use as a source
     @param {int} amount - amount of elements to generate
 */
-std::vector<uint64_t> random_set(
+std::vector<uint16_t> random_set(
     random generator,
-    std::vector<uint64_t> &input,
+    std::vector<uint16_t> &input,
     int amount = 1)
 {
   int size = input.size();
   int _amount = std::min(amount, size);
 
-  std::vector<uint64_t> result = {};
+  std::vector<uint16_t> result = {};
 
   for (int i = 0; i < _amount; i++)
   {
@@ -61,10 +61,10 @@ std::vector<uint64_t> random_set(
   // Determine the next mints
 
   // Generates a vector containing all the possible mints
-  std::vector<uint64_t> set = generate_set_with_mints();
+  std::vector<uint16_t> set = generate_set_with_mints();
 
   // Randomize
-  std::vector<uint64_t> result = random_set(
+  std::vector<uint16_t> result = random_set(
       generator,
       set,
       get_set_size(user->completed_sets));
@@ -120,13 +120,13 @@ std::vector<uint64_t> random_set(
 
   // TODO: improve
   // Sort the collected & to_collect vector
-  std::vector<uint64_t> collected(game->collected);
-  std::vector<uint64_t> to_collect(game->to_collect);
+  std::vector<uint16_t> collected(game->collected);
+  std::vector<uint16_t> to_collect(game->to_collect);
   std::sort(to_collect.begin(), to_collect.end());
   std::sort(collected.begin(), collected.end());
 
   // Get the set difference (to be collected mints)
-  std::vector<uint64_t> remainder;
+  std::vector<uint16_t> remainder;
   std::set_difference(to_collect.begin(), to_collect.end(), collected.begin(), collected.end(), std::inserter(remainder, remainder.begin()));
 
   // Loop over the remaining mints that are required

@@ -13,35 +13,33 @@ public:
 
     struct cfg_params
     {
-        uint64_t new_game_base = 2;
-        uint64_t reward_cap = 6;
-        uint64_t min_mint = 1;
-        uint64_t max_mint = 100;
+        uint16_t new_game_base = 2;
+        uint16_t reward_cap = 6;
+        uint16_t min_mint = 6;
+        uint16_t max_mint = 105;
+        uint16_t mint_offset = 1;
         std::string reward_memo = "Set completion reward";
     };
 
     struct NFT
     {
         uint64_t asset_id;
-        uint64_t index;
+        uint16_t index;
     };
 
     struct MINT
     {
-        uint64_t mint;
         uint64_t asset_id;
+        uint16_t mint;
     };
 
     struct [[eosio::table("mints")]] _mint_asset
     {
         uint64_t index;
-
         uint64_t template_id;
-
         std::vector<MINT> mints;
 
         uint64_t primary_key() const { return index; };
-
         uint64_t secondary_key_0() const { return template_id; };
     };
     typedef eosio::multi_index<
@@ -77,8 +75,8 @@ private:
     struct [[eosio::table("games")]] _game_entity
     {
         eosio::name owner;
-        std::vector<uint64_t> to_collect = {};
-        std::vector<uint64_t> collected = {};
+        std::vector<uint16_t> to_collect = {};
+        std::vector<uint16_t> collected = {};
 
         uint64_t primary_key() const { return owner.value; };
     };
@@ -136,7 +134,7 @@ private:
     random random_generator(std::string data);
 
     uint64_t get_set_size(uint64_t completed_sets);
-    std::vector<uint64_t> generate_set_with_mints();
+    std::vector<uint16_t> generate_set_with_mints();
 };
 
 EOSIO_DISPATCH(monkeygame,
