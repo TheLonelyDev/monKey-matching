@@ -96,13 +96,28 @@
 [[eosio::action]] void monkeygame::addreward(uint64_t completions, eosio::name contract, eosio::asset amount)
 {
     require_auth(get_self());
+    auto rewards = get_rewards();
 
-    get_rewards().emplace(get_self(), [&](auto &row)
-                          {
-                              row.completions = completions;
-                              row.contract = contract;
-                              row.amount = amount;
-                          });
+    auto iterator = rewards.find(completions);
+
+    if (iterator == rewards.end())
+    {
+        rewards.emplace(get_self(), [&](auto &row)
+                      {
+                            row.completions = completions;
+                            row.contract = contract;
+                            row.amount = amount;
+                      });
+    }
+    else
+    {
+        rewards.modify(iterator, get_self(), [&](auto &row)
+                     {
+                            row.completions = completions;
+                            row.contract = contract;
+                            row.amount = amount;
+                     });
+    }
 }
 
 [[eosio::action]] void monkeygame::rmmint(uint64_t index)
