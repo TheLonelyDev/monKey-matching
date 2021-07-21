@@ -170,14 +170,11 @@ std::vector<uint16_t> random_set(
   auto game = games.require_find(owner.value, "You have no running game");
   auto user = users.require_find(owner.value, "No user found");
 
-  // Sort the vectors
-  std::vector<uint64_t> collected(game->collected);
-  std::vector<uint64_t> to_collect(game->to_collect);
-  std::sort(to_collect.begin(), to_collect.end());
-  std::sort(collected.begin(), collected.end());
-
-  // Check if the vectors are equal
-  eosio::check(to_collect == collected, "You have not completed your set yet");
+  // Check if the user collected enough mints
+  // Vyryn's fancy math request: https://discord.com/channels/733122024448458784/867103030516252713/867125763291086869
+  int size = game->to_collect.size();
+  int required = (size - ceil(log10(size)));
+  eosio::check(game->collected.size() >= required, "You need to collect at least " + std::to_string(required) + " mints");
 
   // Update the user
   users.modify(user, owner, [&](auto &row)
@@ -185,7 +182,7 @@ std::vector<uint16_t> random_set(
 
   auto config = get_config().get();
   auto rewards = get_rewards();
-  auto reward = rewards.require_find(user->completed_sets >= 8 ? config.params.reward_cap : user->completed_sets + 1, "No reward found");
+  auto reward = rewards.require_find(user->completed_sets > 8 ? config.params.reward_cap : user->completed_sets, "No reward found");
 
   action(
       permission_level{get_self(), name("active")},
