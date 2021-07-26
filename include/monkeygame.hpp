@@ -2,6 +2,7 @@
 #include <eosio/crypto.hpp>
 #include <eosio/singleton.hpp>
 #include <eosio/asset.hpp>
+#include <eosio/time.hpp>
 
 #include <random.hpp>
 #include <atomicassets-interface.hpp>
@@ -18,6 +19,7 @@ public:
         uint16_t min_mint = 6;
         uint16_t max_mint = 105;
         uint16_t mint_offset = 1;
+        uint64_t freeze_time = 86400000;
         std::string reward_memo = "Set completion reward";
     };
 
@@ -50,6 +52,8 @@ public:
     [[eosio::action]] void newgame(eosio::name owner);
     [[eosio::action]] void verify(eosio::name owner, std::vector<NFT> owned_assets);
     [[eosio::action]] void complete(eosio::name owner);
+    [[eosio::action]] void unfreeze(uint64_t asset_id);
+    [[eosio::action]] void unfreezeall(eosio::name owner);
 
     [[eosio::action]] void init();
     [[eosio::action]] void destruct();
@@ -102,6 +106,20 @@ private:
     };
     typedef eosio::multi_index<eosio::name("rewards"), _reward_entity> _rewards;
 
+    struct [[eosio::table("frozen")]] _frozen_asset_entity
+    {
+        uint64_t asset_id;
+        eosio::name owner;
+        eosio::time_point time;
+
+        uint64_t primary_key() const { return asset_id; };
+        uint64_t secondary_key_0() const { return owner.value; };
+    };
+    typedef eosio::multi_index<eosio::name("frozen"), _frozen_asset_entity,
+        eosio::indexed_by<"owner"_n, const_mem_fun<_frozen_asset_entity, uint64_t, &_frozen_asset_entity::secondary_key_0>>
+    >
+    _frozen_assets;
+
     _games get_games()
     {
         return _games(get_self(), get_self().value);
@@ -126,6 +144,11 @@ private:
     {
         return _mints(get_self(), get_self().value);
     }
+   
+    _frozen_assets get_frozen_assets()
+    {
+        return _frozen_assets(get_self(), get_self().value);
+    }
 
     void init_user(eosio::name owner);
 
@@ -135,10 +158,12 @@ private:
 
     uint64_t get_set_size(uint64_t completed_sets);
     std::vector<uint16_t> generate_set_with_mints();
+
+    bool is_frozen(eosio::time_point time, uint64_t freeze_time);
 };
 
 EOSIO_DISPATCH(monkeygame,
-               (newgame)(verify)(complete)
+               (newgame)(verify)(complete)(unfreeze)(unfreezeall)
 
                    (init)(destruct)(maintenance)(setsalt)(setparams)
 

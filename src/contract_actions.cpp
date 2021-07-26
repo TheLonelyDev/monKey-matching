@@ -83,6 +83,11 @@
     config.set(new_config, get_self());
 }
 
+/*
+    Remove the row for a sepcific amount of completions.
+
+    @auth self
+*/
 [[eosio::action]] void monkeygame::rmreward(uint64_t completions)
 {
     require_auth(get_self());
@@ -93,11 +98,18 @@
     rewards.erase(entity);
 }
 
+/*
+    Add a reward for a specific amount of completions.
+
+    Updates the values if the completions already exist.
+
+    @auth self
+*/
 [[eosio::action]] void monkeygame::addreward(uint64_t completions, eosio::name contract, eosio::asset amount)
 {
     require_auth(get_self());
-    auto rewards = get_rewards();
 
+    auto rewards = get_rewards();
     auto iterator = rewards.find(completions);
 
     if (iterator == rewards.end())
@@ -120,6 +132,11 @@
     }
 }
 
+/*
+    Removes a mint index.
+
+    @auth self
+*/
 [[eosio::action]] void monkeygame::rmmint(uint64_t index)
 {
     require_auth(get_self());
@@ -130,6 +147,11 @@
     mints.erase(entity);
 }
 
+/*
+    Creates or updates a mint index.
+
+    @auth self
+*/
 [[eosio::action]] void monkeygame::addmint(uint64_t index, uint64_t template_id, std::vector<MINT> new_mints)
 {
     require_auth(get_self());

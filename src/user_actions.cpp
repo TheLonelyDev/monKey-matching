@@ -106,10 +106,12 @@ std::vector<uint16_t> random_set(
 
   // Get the owned assets
   auto assets = atomicassets::get_assets(owner);
+  std::map<uint16_t, uint64_t> ownedDict;
   for (const NFT &nft : owned_assets)
   {
     assets.require_find(nft.asset_id, "You do not own all assets");
     mints.require_find(nft.index, "Mint index not found");
+    unfreeze(nft.asset_id);
 
     auto entry = mints.get(nft.index);
 
@@ -118,6 +120,7 @@ std::vector<uint16_t> random_set(
 
     eosio::check(iterator != entry.mints.end(), "Asset mint number not found");
     owned.push_back(iterator->mint);
+    ownedDict[iterator->mint] = iterator->asset_id;
   }
 
   // TODO: improve
@@ -139,6 +142,14 @@ std::vector<uint16_t> random_set(
                      { return std::abs(int(mint - elem)) <= mint_offset; }) != owned.end())
     {
       collected.push_back(elem);
+
+      // Freeze asset
+      get_frozen_assets().emplace(owner, [&](auto &row)
+                {
+                      row.asset_id = ownedDict[elem];
+                      row.owner = owner;
+                      row.time = eosio::current_time_point();
+                });
     }
   }
 
@@ -197,4 +208,62 @@ std::vector<uint16_t> random_set(
 
   // Release the game entry
   games.erase(game);
+}
+
+/*
+    Unfreeze an asset if the asset has been frozen for long enough.
+
+    Frozen time set by config options.
+
+    @throws Will throw if the contract is in maintenace
+    @throws Will throw if asset canot be unfrozen
+
+    @auth none
+*/
+[[eosio::action]] void monkeygame::unfreeze(
+  uint64_t asset_id
+)
+{
+  maintenace_check();
+
+  auto config = get_config().get();
+  auto frozen_assets = get_frozen_assets();
+  auto iterator = frozen_assets.find(asset_id);
+
+  // Unfreeze if asset is found
+  if (iterator != frozen_assets.end())
+  {
+    eosio::check(is_frozen(iterator->time, config.params.freeze_time), "Could not unfreeze the asset");
+
+    frozen_assets.erase(iterator);
+  }
+}
+
+/*
+    Unfreeze all expired assets owned by someone.
+
+    Frozen time set by config options.
+
+    @throws Will throw if the contract is in maintenace
+
+    @auth none
+*/
+[[eosio::action]] void monkeygame::unfreezeall(
+  eosio::name owner
+)
+{
+  maintenace_check();
+
+  auto config = get_config().get();
+  auto frozen_assets = get_frozen_assets();
+  auto owner_index = frozen_assets.get_index<eosio::name("owner")>();
+  auto iterator = owner_index.lower_bound(owner.value);
+
+  while (iterator->owner == owner)
+  {
+    if (is_frozen(iterator->time, config.params.freeze_time))
+    {
+      iterator = owner_index.erase(iterator);
+    }
+  }
 }

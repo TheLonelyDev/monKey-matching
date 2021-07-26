@@ -4,6 +4,34 @@
     "types": [],
     "structs": [
         {
+            "name": "MINT",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "mint",
+                    "type": "uint16"
+                }
+            ]
+        },
+        {
+            "name": "NFT",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "index",
+                    "type": "uint16"
+                }
+            ]
+        },
+        {
             "name": "_config_entity",
             "base": "",
             "fields": [
@@ -22,6 +50,24 @@
             ]
         },
         {
+            "name": "_frozen_asset_entity",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "time",
+                    "type": "time_point"
+                }
+            ]
+        },
+        {
             "name": "_game_entity",
             "base": "",
             "fields": [
@@ -31,11 +77,29 @@
                 },
                 {
                     "name": "to_collect",
-                    "type": "uint64[]"
+                    "type": "uint16[]"
                 },
                 {
                     "name": "collected",
-                    "type": "uint64[]"
+                    "type": "uint16[]"
+                }
+            ]
+        },
+        {
+            "name": "_mint_asset",
+            "base": "",
+            "fields": [
+                {
+                    "name": "index",
+                    "type": "uint64"
+                },
+                {
+                    "name": "template_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "mints",
+                    "type": "MINT[]"
                 }
             ]
         },
@@ -72,24 +136,20 @@
             ]
         },
         {
-            "name": "_whitelist_entity",
+            "name": "addmint",
             "base": "",
             "fields": [
                 {
-                    "name": "key",
+                    "name": "index",
                     "type": "uint64"
-                },
-                {
-                    "name": "collection_name",
-                    "type": "name"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "name"
                 },
                 {
                     "name": "template_id",
                     "type": "uint64"
+                },
+                {
+                    "name": "new_mints",
+                    "type": "MINT[]"
                 }
             ]
         },
@@ -112,41 +172,31 @@
             ]
         },
         {
-            "name": "addwhitelist",
-            "base": "",
-            "fields": [
-                {
-                    "name": "collection_name",
-                    "type": "name"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "name"
-                },
-                {
-                    "name": "template_id",
-                    "type": "uint64"
-                }
-            ]
-        },
-        {
             "name": "cfg_params",
             "base": "",
             "fields": [
                 {
                     "name": "new_game_base",
-                    "type": "uint64"
+                    "type": "uint16"
                 },
                 {
                     "name": "reward_cap",
-                    "type": "uint64"
+                    "type": "uint16"
                 },
                 {
                     "name": "min_mint",
-                    "type": "uint64"
+                    "type": "uint16"
                 },
                 {
                     "name": "max_mint",
+                    "type": "uint16"
+                },
+                {
+                    "name": "mint_offset",
+                    "type": "uint16"
+                },
+                {
+                    "name": "freeze_time",
                     "type": "uint64"
                 },
                 {
@@ -196,21 +246,21 @@
             ]
         },
         {
-            "name": "rmreward",
+            "name": "rmmint",
             "base": "",
             "fields": [
                 {
-                    "name": "completions",
+                    "name": "index",
                     "type": "uint64"
                 }
             ]
         },
         {
-            "name": "rmwhitelist",
+            "name": "rmreward",
             "base": "",
             "fields": [
                 {
-                    "name": "key",
+                    "name": "completions",
                     "type": "uint64"
                 }
             ]
@@ -236,7 +286,17 @@
             ]
         },
         {
-            "name": "verify",
+            "name": "unfreeze",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "unfreezeall",
             "base": "",
             "fields": [
                 {
@@ -244,17 +304,31 @@
                     "type": "name"
                 }
             ]
+        },
+        {
+            "name": "verify",
+            "base": "",
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "name"
+                },
+                {
+                    "name": "owned_assets",
+                    "type": "NFT[]"
+                }
+            ]
         }
     ],
     "actions": [
         {
-            "name": "addreward",
-            "type": "addreward",
+            "name": "addmint",
+            "type": "addmint",
             "ricardian_contract": ""
         },
         {
-            "name": "addwhitelist",
-            "type": "addwhitelist",
+            "name": "addreward",
+            "type": "addreward",
             "ricardian_contract": ""
         },
         {
@@ -283,13 +357,13 @@
             "ricardian_contract": ""
         },
         {
-            "name": "rmreward",
-            "type": "rmreward",
+            "name": "rmmint",
+            "type": "rmmint",
             "ricardian_contract": ""
         },
         {
-            "name": "rmwhitelist",
-            "type": "rmwhitelist",
+            "name": "rmreward",
+            "type": "rmreward",
             "ricardian_contract": ""
         },
         {
@@ -300,6 +374,16 @@
         {
             "name": "setsalt",
             "type": "setsalt",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "unfreeze",
+            "type": "unfreeze",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "unfreezeall",
+            "type": "unfreezeall",
             "ricardian_contract": ""
         },
         {
@@ -317,8 +401,22 @@
             "key_types": []
         },
         {
+            "name": "frozen",
+            "type": "_frozen_asset_entity",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
             "name": "games",
             "type": "_game_entity",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "mints",
+            "type": "_mint_asset",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
@@ -333,13 +431,6 @@
         {
             "name": "users",
             "type": "_user_entity",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "whitelist",
-            "type": "_whitelist_entity",
             "index_type": "i64",
             "key_names": [],
             "key_types": []
