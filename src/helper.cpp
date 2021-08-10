@@ -44,7 +44,7 @@ void monkeygame::maintenace_check()
   eosio::check(!get_config().get().maintenance, "Game is in maintenance");
 }
 
-bool monkeygame::is_frozen(eosio::time_point time, uint64_t freeze_time)
+bool monkeygame::is_frozen(eosio::time_point time, int64_t freeze_time)
 {
-  return eosio::current_time_point() >= time + eosio::microseconds(freeze_time);
+  return eosio::current_time_point() >= (time + eosio::milliseconds(freeze_time));
 }

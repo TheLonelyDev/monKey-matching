@@ -19,7 +19,7 @@ public:
         uint16_t min_mint = 6;
         uint16_t max_mint = 105;
         uint16_t mint_offset = 1;
-        uint64_t freeze_time = 86400000;
+        int64_t freeze_time = 86400000;
         std::string reward_memo = "Set completion reward";
     };
 
@@ -159,7 +159,7 @@ private:
     uint64_t get_set_size(uint64_t completed_sets);
     std::vector<uint16_t> generate_set_with_mints();
 
-    bool is_frozen(eosio::time_point time, uint64_t freeze_time);
+    bool is_frozen(eosio::time_point time, int64_t freeze_time);
 };
 
 EOSIO_DISPATCH(monkeygame,
