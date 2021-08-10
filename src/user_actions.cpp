@@ -101,29 +101,41 @@ std::vector<uint16_t> random_set(
   auto game = games.require_find(owner.value, "You have no running game");
   auto user = users.require_find(owner.value, "No user found");
 
-  std::vector<uint16_t> owned = {};
-  //std::vector<uint16_t> owned = generate_set_with_mints();
+  struct ASSET_INFO {
+    uint16_t mint;
+    uint64_t asset_id;
+    // Offset = difference/distance between asset mint and mint to get + (mint / (max mint * 10))
+    double offset = 0;
+
+    bool operator < (const ASSET_INFO& other) const
+    {
+        return (offset < other.offset);
+    }
+  };
+  std::vector<ASSET_INFO> owned = {};
 
   // Get the owned assets
   auto assets = atomicassets::get_assets(owner);
-  std::map<uint16_t, uint64_t> ownedDict;
   for (const NFT &nft : owned_assets)
   {
     assets.require_find(nft.asset_id, "You do not own all assets");
     mints.require_find(nft.index, "Mint index not found");
+
     unfreeze(nft.asset_id);
 
     auto entry = mints.get(nft.index);
 
+    // Try to find the asset mint number
     auto iterator = std::find_if(entry.mints.begin(), entry.mints.end(), [&id = nft.asset_id](const MINT &mint) -> bool
                                  { return id == mint.asset_id; });
 
+    // Asset mint number not found
     eosio::check(iterator != entry.mints.end(), "Asset mint number not found");
-    owned.push_back(iterator->mint);
-    ownedDict[iterator->mint] = iterator->asset_id;
+
+    // Create a ASSET_INFO struct witht he mint & asset id
+    owned.push_back(ASSET_INFO { iterator->mint, nft.asset_id });
   }
 
-  // TODO: improve
   // Sort the collected & to_collect vector
   std::vector<uint16_t> collected(game->collected);
   std::vector<uint16_t> to_collect(game->to_collect);
@@ -135,22 +147,57 @@ std::vector<uint16_t> random_set(
   std::set_difference(to_collect.begin(), to_collect.end(), collected.begin(), collected.end(), std::inserter(remainder, remainder.begin()));
 
   // Loop over the remaining mints that are required
-  for (auto elem : remainder)
-  {
-    // If the mint is owned, add it to the collected vector
-    if (std::find_if(owned.begin(), owned.end(), [&elem = elem, &mint_offset = config.params.mint_offset](const uint16_t &mint) -> bool
-                     { return std::abs(int(mint - elem)) <= mint_offset; }) != owned.end())
-    {
-      collected.push_back(elem);
+  for (auto& elem : remainder)
+  { 
+    std::vector<ASSET_INFO> difference_map;
 
-      // Freeze asset
-      get_frozen_assets().emplace(owner, [&](auto &row)
-                {
-                      row.asset_id = ownedDict[elem];
-                      row.owner = owner;
-                      row.time = eosio::current_time_point();
-                });
+    // Loop over all the owned mints
+    for (auto it = owned.begin(); it != owned.end(); ++it ) {      
+      // Check if the distance
+      uint16_t const& difference = std::abs(int(it->mint - elem));
+
+      // Is the distance bigger than the offset? Do not do anything
+      if (difference >= config.params.mint_offset) {
+        continue;
+      }
+
+      // Is the difference 0? (exact match) populate the result and exit the loop
+      if (difference == 0) {
+        // Clear all previous matches for this mint
+        difference_map.clear();
+        difference_map.push_back(ASSET_INFO { it->mint, it->asset_id, 0 });
+        break;
+      }
+
+      // Add it to the result
+      difference_map.push_back(ASSET_INFO { it->mint, it->asset_id, (double) difference + ((double) elem / (double)(config.params.max_mint * 10)) });
     }
+
+    // Sort the difference map
+    std::sort(difference_map.begin(), difference_map.end());
+
+    auto const& match = difference_map.begin();
+
+    // Skip, no match found
+    if (match == difference_map.end())
+    {
+      continue;
+    }
+
+    collected.push_back(elem);
+
+    // Freeze asset
+    get_frozen_assets().emplace(owner, [&](auto &row)
+              {
+                    row.asset_id = match->asset_id;
+                    row.owner = owner;
+                    row.time = eosio::current_time_point();
+              });
+
+    // Delete from mints to check (do not use an asset twice)
+    auto it = std::find_if(owned.begin(), owned.end(), [&asset_id = match->asset_id](const ASSET_INFO &tmp) -> bool
+                     { return tmp.asset_id == asset_id; });
+    owned.erase(it);
   }
 
   // Update the collected mints
