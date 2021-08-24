@@ -157,7 +157,7 @@ std::vector<uint16_t> random_set(
       uint16_t const& difference = std::abs(int(it->mint - elem));
 
       // Is the distance bigger than the offset? Do not do anything
-      if (difference >= config.params.mint_offset) {
+      if (difference > config.params.mint_offset) {
         continue;
       }
 
