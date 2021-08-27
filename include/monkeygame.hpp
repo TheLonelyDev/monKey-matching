@@ -150,13 +150,8 @@ private:
         return _frozen_assets(get_self(), get_self().value);
     }
 
-    void init_user(eosio::name owner);
-
     void maintenace_check();
 
-    random random_generator(std::string data);
-
-    uint64_t get_set_size(uint64_t completed_sets);
     std::vector<uint16_t> generate_set_with_mints();
 
     bool is_frozen(eosio::time_point time, int64_t freeze_time);

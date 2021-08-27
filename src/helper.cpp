@@ -19,26 +19,6 @@ std::vector<uint16_t> monkeygame::generate_set_with_mints()
   return set;
 }
 
-uint64_t monkeygame::get_set_size(uint64_t completed_sets)
-{
-  return pow(get_config().get().params.new_game_base, completed_sets + 1);
-}
-
-void monkeygame::init_user(eosio::name owner)
-{
-  auto users = get_users();
-
-  users.emplace(owner, [&](auto &row)
-                { row.owner = owner; });
-}
-
-random monkeygame::random_generator(std::string data)
-{
-  std::string salt = get_config().get().salt.append(data);
-
-  return random(eosio::sha256(salt.c_str(), salt.length()));
-}
-
 void monkeygame::maintenace_check()
 {
   eosio::check(!get_config().get().maintenance, "Game is in maintenance");

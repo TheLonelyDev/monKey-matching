@@ -11,7 +11,6 @@ public:
 
     uint32_t next(uint64_t max)
     {
-        //return (get_value() % (max + 1 - min)) + min;
         return get_value() % max;
     }
 

@@ -4,11 +4,13 @@
     @param {ranom} generator - random generator instance with seed
     @param {vector<uint16_t>} input - input vector to use as a source
     @param {int} amount - amount of elements to generate
+    @param {int} offset - minimal distance to keep
 */
 std::vector<uint16_t> random_set(
     random generator,
-    std::vector<uint16_t> &input,
-    int amount = 1)
+    std::vector<uint16_t> input,
+    int amount = 1,
+    int offset = 0)
 {
   int size = input.size();
   int _amount = std::min(amount, size);
@@ -19,7 +21,12 @@ std::vector<uint16_t> random_set(
   {
     auto index = generator.next(size - i);
     result.push_back(input[index]);
-    input.erase(input.begin() + index);
+
+    // Remove everything around the element taking offset into account
+    input.erase(
+      input.begin() + clamp<uint64_t>(index - offset, 0, size - i), 
+      input.begin() + clamp<uint64_t>(index + offset, 0, size - i)
+    );
   }
 
   return result;
@@ -42,6 +49,7 @@ std::vector<uint16_t> random_set(
 
   auto games = get_games();
   auto users = get_users();
+  auto config = get_config().get();
   auto game = games.find(owner.value);
 
   eosio::check(game == games.end(), "You already have a game running");
@@ -51,23 +59,29 @@ std::vector<uint16_t> random_set(
 
   if (user == users.end())
   {
-    init_user(owner);
+    users.emplace(owner, [&](auto &row)
+                  { row.owner = owner; });
+
     user = users.find(owner.value);
   }
 
-  // Init a random_generator based on config.salt, owner and completed sets
-  random generator = random_generator(owner.to_string().append("-" + std::to_string(user->completed_sets)));
-
   // Determine the next mints
-
-  // Generates a vector containing all the possible mints
-  std::vector<uint16_t> set = generate_set_with_mints();
+  std::stringstream salt;
+  salt << config.salt << "-" << owner.to_string() << "-" << std::to_string(user->completed_sets);
 
   // Randomize
   std::vector<uint16_t> result = random_set(
-      generator,
-      set,
-      get_set_size(user->completed_sets));
+      // Init a random_generator based on config.salt, owner and completed sets
+      random(eosio::sha256(salt.str().c_str(), salt.str().length())),
+      //random_generator(owner.to_string().append("-" + std::to_string(user->completed_sets))),
+      
+      // Generates a vector containing all the possible mints
+      generate_set_with_mints(),
+
+      pow(config.params.new_game_base, user->completed_sets + 1),
+
+      config.params.mint_offset
+    );
 
   // Create entry in games table
   games.emplace(owner, [&](auto &row)
@@ -140,14 +154,9 @@ std::vector<uint16_t> random_set(
   std::vector<uint16_t> collected(game->collected);
   std::vector<uint16_t> to_collect(game->to_collect);
   std::sort(to_collect.begin(), to_collect.end());
-  std::sort(collected.begin(), collected.end());
-
-  // Get the set difference (to be collected mints)
-  std::vector<uint16_t> remainder;
-  std::set_difference(to_collect.begin(), to_collect.end(), collected.begin(), collected.end(), std::inserter(remainder, remainder.begin()));
 
   // Loop over the remaining mints that are required
-  for (auto& elem : remainder)
+  for (auto& elem : to_collect)
   { 
     std::vector<ASSET_INFO> difference_map;
 
@@ -199,6 +208,9 @@ std::vector<uint16_t> random_set(
                      { return tmp.asset_id == asset_id; });
     owned.erase(it);
   }
+
+  std::sort(collected.begin(), collected.end());
+  collected.erase(unique(collected.begin(), collected.end()), collected.end());
 
   // Update the collected mints
   games.modify(game, owner, [&](auto &row)
