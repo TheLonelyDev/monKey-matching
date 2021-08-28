@@ -13,7 +13,7 @@ std::vector<uint16_t> random_set(
     int offset = 0)
 {
   int size = input.size();
-  int _amount = std::min(amount, size);
+  int _amount = std::min(amount, size / ((offset * 2) + 1));
 
   std::vector<uint16_t> result = {};
 
@@ -66,13 +66,14 @@ std::vector<uint16_t> random_set(
   }
 
   // Determine the next mints
-  std::stringstream salt;
-  salt << config.salt << "-" << owner.to_string() << "-" << std::to_string(user->completed_sets);
+  auto salt = config.salt;
+  salt.append("-").append(owner.to_string());
+  salt.append("-").append(std::to_string(user->completed_sets));
 
   // Randomize
   std::vector<uint16_t> result = random_set(
       // Init a random_generator based on config.salt, owner and completed sets
-      random(eosio::sha256(salt.str().c_str(), salt.str().length())),
+      random(eosio::sha256(salt.c_str(), salt.length())),
       //random_generator(owner.to_string().append("-" + std::to_string(user->completed_sets))),
       
       // Generates a vector containing all the possible mints
