@@ -3,30 +3,31 @@
 
     @param {ranom} generator - random generator instance with seed
     @param {vector<uint16_t>} input - input vector to use as a source
-    @param {int} amount - amount of elements to generate
-    @param {int} offset - minimal distance to keep
+    @param {uint16_t} amount - amount of elements to generate
+    @param {uint16_t} offset - minimal distance to keep
 */
 std::vector<uint16_t> random_set(
     random generator,
-    std::vector<uint16_t> input,
-    int amount = 1,
-    int offset = 0)
+    std::vector<uint16_t>& input,
+    uint16_t amount = 1,
+    uint16_t offset = 0)
 {
   int size = input.size();
-  int _amount = std::min(amount, size / ((offset * 2) + 1));
+  uint16_t _amount = std::min<uint16_t>(amount, size / ((offset * 2) + 1));
 
   std::vector<uint16_t> result = {};
 
-  for (int i = 0; i < _amount; i++)
+  for (auto i = 0; i < _amount; i++)
   {
     auto index = generator.next(size - i);
     result.push_back(input[index]);
 
-    // Remove everything around the element taking offset into account
-    input.erase(
-      input.begin() + clamp<uint64_t>(index - offset, 0, size - i), 
-      input.begin() + clamp<uint64_t>(index + offset, 0, size - i)
-    );
+    // Remove everything around the element taking offset into account 
+    input.erase(std::remove_if(
+      input.begin(), input.end(),
+      [&index = index, offset](const auto& tmp) -> bool { 
+          return index + offset <= tmp && index - offset >= tmp;
+      }), input.end());
   }
 
   return result;
