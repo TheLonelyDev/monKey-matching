@@ -70,6 +70,7 @@ std::vector<uint16_t> random_set(
   salt.append("-").append(owner.to_string());
   salt.append("-").append(std::to_string(user->completed_sets));
 
+  auto mints = generate_set_with_mints();
   // Randomize
   std::vector<uint16_t> result = random_set(
       // Init a random_generator based on config.salt, owner and completed sets
@@ -77,7 +78,7 @@ std::vector<uint16_t> random_set(
       //random_generator(owner.to_string().append("-" + std::to_string(user->completed_sets))),
       
       // Generates a vector containing all the possible mints
-      generate_set_with_mints(),
+      mints,
 
       pow(config.params.new_game_base, user->completed_sets + 1),
 
@@ -155,18 +156,23 @@ std::vector<uint16_t> random_set(
   std::vector<uint16_t> collected(game->collected);
   std::vector<uint16_t> to_collect(game->to_collect);
   std::sort(to_collect.begin(), to_collect.end());
+  std::sort(collected.begin(), collected.end());
+
+  // Get the set difference (to be collected mints)
+  std::vector<uint16_t> remainder;
+  std::set_difference(to_collect.begin(), to_collect.end(), collected.begin(), collected.end(), std::inserter(remainder, remainder.begin()));
 
   // Loop over the remaining mints that are required
-  for (auto& elem : to_collect)
+  for (auto& elem : remainder)
   { 
     std::vector<ASSET_INFO> difference_map;
 
     // Loop over all the owned mints
     for (auto it = owned.begin(); it != owned.end(); ++it ) {      
-      // Check if the distance
+      // Get the difference between the mint owned and to
       uint16_t const& difference = std::abs(int(it->mint - elem));
 
-      // Is the distance bigger than the offset? Do not do anything
+      // Is the difference bigger than the offset? Do not do anything
       if (difference > config.params.mint_offset) {
         continue;
       }
@@ -183,35 +189,40 @@ std::vector<uint16_t> random_set(
       difference_map.push_back(ASSET_INFO { it->mint, it->asset_id, (double) difference + ((double) elem / (double)(config.params.max_mint * 10)) });
     }
 
-    // Sort the difference map
-    std::sort(difference_map.begin(), difference_map.end());
-
-    auto const& match = difference_map.begin();
-
     // Skip, no match found
-    if (match == difference_map.end())
+    if (difference_map.size() == 0)
     {
       continue;
     }
 
+    // Sort the difference map
+    std::sort(difference_map.begin(), difference_map.end());
+    auto const& match = difference_map.begin();
+
     collected.push_back(elem);
 
     // Freeze asset
-    get_frozen_assets().emplace(owner, [&](auto &row)
-              {
-                    row.asset_id = match->asset_id;
-                    row.owner = owner;
-                    row.time = eosio::current_time_point();
-              });
-
-    // Delete from mints to check (do not use an asset twice)
-    auto it = std::find_if(owned.begin(), owned.end(), [&asset_id = match->asset_id](const ASSET_INFO &tmp) -> bool
-                     { return tmp.asset_id == asset_id; });
-    owned.erase(it);
+    // If already collected, do not freeze the asset
+    auto it = std::find_if(collected.begin(), collected.end(), [&mint = match->mint](const int &tmp) -> bool
+                                 { return tmp == mint; });
+    if (it != collected.end()) 
+    {
+      get_frozen_assets().emplace(owner, [&](auto &row)
+                {
+                      row.asset_id = match->asset_id;
+                      row.owner = owner;
+                      row.time = eosio::current_time_point();
+                });
+    }
+    
+    // Delete from mints to check
+    // We remove the same mint numbers (if any) from the list
+    owned.erase(std::remove_if(
+      owned.begin(), owned.end(),
+      [&mint = match->mint](const ASSET_INFO& tmp) -> bool { 
+          return tmp.mint == mint;
+      }), owned.end());
   }
-
-  std::sort(collected.begin(), collected.end());
-  collected.erase(unique(collected.begin(), collected.end()), collected.end());
 
   // Update the collected mints
   games.modify(game, owner, [&](auto &row)
