@@ -2,7 +2,6 @@
   "name": "match-a-monkey-scripts",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,6 +11,9 @@
     "atomicassets": "^1.4.2",
     "eosjs": "^22.1.0",
     "eosjs-ecc": "^4.0.7",
-    "node-fetch": "^3.0.0"
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1"
   }
 }
