@@ -8,3 +8,5 @@ matchamonkey.wasm
 scripts/node_modules/
 
 scripts/config.json
+
+scripts/mint.cache.json
