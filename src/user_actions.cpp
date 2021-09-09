@@ -8,26 +8,35 @@
 */
 std::vector<uint16_t> random_set(
     random generator,
-    std::vector<uint16_t>& input,
+    std::vector<uint16_t> input,
     uint16_t amount = 1,
     uint16_t offset = 0)
 {
-  int size = input.size();
-  uint16_t _amount = std::min<uint16_t>(amount, size / ((offset * 2) + 1));
+  std::vector<uint16_t> _input(input);
+  int size = _input.size();
+  uint16_t _amount = std::min<uint16_t>(amount, size);
 
   std::vector<uint16_t> result = {};
 
   for (auto i = 0; i < _amount; i++)
   {
-    auto index = generator.next(size - i);
-    result.push_back(input[index]);
+    auto index = generator.next(size);
+    auto val = _input[index];
+    result.push_back(val);
 
     // Remove everything around the element taking offset into account 
-    input.erase(std::remove_if(
-      input.begin(), input.end(),
-      [&index = index, offset](const auto& tmp) -> bool { 
-          return index + offset <= tmp && index - offset >= tmp;
-      }), input.end());
+    _input.erase(std::remove_if(
+      _input.begin(), _input.end(),
+      [&val = val, &offset = offset](const auto& tmp) -> bool { 
+          return tmp <= val + offset && tmp >= val - offset;
+      }), _input.end());
+
+      size = _input.size();
+
+    // Check if we still have items left or not
+    if (size == 0) {
+      break;
+    }
   }
 
   return result;
@@ -71,7 +80,6 @@ std::vector<uint16_t> random_set(
   salt.append("-").append(owner.to_string());
   salt.append("-").append(std::to_string(user->completed_sets));
 
-  auto mints = generate_set_with_mints();
   // Randomize
   std::vector<uint16_t> result = random_set(
       // Init a random_generator based on config.salt, owner and completed sets
@@ -79,7 +87,7 @@ std::vector<uint16_t> random_set(
       //random_generator(owner.to_string().append("-" + std::to_string(user->completed_sets))),
       
       // Generates a vector containing all the possible mints
-      mints,
+      generate_set_with_mints(),
 
       pow(config.params.new_game_base, user->completed_sets + 1),
 
@@ -257,7 +265,7 @@ std::vector<uint16_t> random_set(
   // Vyryn's fancy math request: https://discord.com/channels/733122024448458784/867103030516252713/867125763291086869
   int size = game->to_collect.size();
   int required = (size - ceil(log10(size)));
-  eosio::check(game->collected.size() >= required, "You need to collect at least " + std::to_string(required) + " mints");
+  eosio::check(game->collected.size() >= required, "You need to collect at least " + std::to_string(required) + " mints, got " + std::to_string(game->collected.size()));
 
   // Update the user
   users.modify(user, owner, [&](auto &row)
@@ -333,9 +341,12 @@ std::vector<uint16_t> random_set(
 
   while (iterator->owner == owner)
   {
-    if (is_frozen(iterator->time, config.params.freeze_time))
+    if (!is_frozen(iterator->time, config.params.freeze_time))
     {
       iterator = owner_index.erase(iterator);
+    }
+    else {
+      iterator++;
     }
   }
 }
