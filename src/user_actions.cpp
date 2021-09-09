@@ -1,7 +1,7 @@
 /*
     Generate a unique random set.
 
-    @param {ranom} generator - random generator instance with seed
+    @param {random} generator - random generator instance with seed
     @param {vector<uint16_t>} input - input vector to use as a source
     @param {uint16_t} amount - amount of elements to generate
     @param {uint16_t} offset - minimal distance to keep
