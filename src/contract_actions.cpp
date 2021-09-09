@@ -115,20 +115,20 @@
     if (iterator == rewards.end())
     {
         rewards.emplace(get_self(), [&](auto &row)
-                      {
+                        {
                             row.completions = completions;
                             row.contract = contract;
                             row.amount = amount;
-                      });
+                        });
     }
     else
     {
         rewards.modify(iterator, get_self(), [&](auto &row)
-                     {
-                            row.completions = completions;
-                            row.contract = contract;
-                            row.amount = amount;
-                     });
+                       {
+                           row.completions = completions;
+                           row.contract = contract;
+                           row.amount = amount;
+                       });
     }
 }
 

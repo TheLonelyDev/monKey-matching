@@ -116,9 +116,8 @@ private:
         uint64_t secondary_key_0() const { return owner.value; };
     };
     typedef eosio::multi_index<eosio::name("frozen"), _frozen_asset_entity,
-        eosio::indexed_by<"owner"_n, const_mem_fun<_frozen_asset_entity, uint64_t, &_frozen_asset_entity::secondary_key_0>>
-    >
-    _frozen_assets;
+                               eosio::indexed_by<"owner"_n, const_mem_fun<_frozen_asset_entity, uint64_t, &_frozen_asset_entity::secondary_key_0>>>
+        _frozen_assets;
 
     _games get_games()
     {
@@ -144,7 +143,7 @@ private:
     {
         return _mints(get_self(), get_self().value);
     }
-   
+
     _frozen_assets get_frozen_assets()
     {
         return _frozen_assets(get_self(), get_self().value);

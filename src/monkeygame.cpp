@@ -1,7 +1,7 @@
 #include <monkeygame.hpp>
 
 #include <string>
-#include <math.h> 
+#include <math.h>
 #include <algorithm>
 #include <cstdlib>
 

@@ -24,17 +24,20 @@ std::vector<uint16_t> random_set(
     auto val = _input[index];
     result.push_back(val);
 
-    // Remove everything around the element taking offset into account 
+    // Remove everything around the element taking offset into account
     _input.erase(std::remove_if(
-      _input.begin(), _input.end(),
-      [&val = val, &offset = offset](const auto& tmp) -> bool { 
-          return tmp <= val + offset && tmp >= val - offset;
-      }), _input.end());
+                     _input.begin(), _input.end(),
+                     [&val = val, &offset = offset](const auto &tmp) -> bool
+                     {
+                       return tmp <= val + offset && tmp >= val - offset;
+                     }),
+                 _input.end());
 
-      size = _input.size();
+    size = _input.size();
 
     // Check if we still have items left or not
-    if (size == 0) {
+    if (size == 0)
+    {
       break;
     }
   }
@@ -85,14 +88,13 @@ std::vector<uint16_t> random_set(
       // Init a random_generator based on config.salt, owner and completed sets
       random(eosio::sha256(salt.c_str(), salt.length())),
       //random_generator(owner.to_string().append("-" + std::to_string(user->completed_sets))),
-      
+
       // Generates a vector containing all the possible mints
       generate_set_with_mints(),
 
       pow(config.params.new_game_base, user->completed_sets + 1),
 
-      config.params.mint_offset
-    );
+      config.params.mint_offset);
 
   // Create entry in games table
   games.emplace(owner, [&](auto &row)
@@ -126,15 +128,16 @@ std::vector<uint16_t> random_set(
   auto game = games.require_find(owner.value, "You have no running game");
   auto user = users.require_find(owner.value, "No user found");
 
-  struct ASSET_INFO {
+  struct ASSET_INFO
+  {
     uint16_t mint;
     uint64_t asset_id;
     // Offset = difference/distance between asset mint and mint to get + (mint / (max mint * 10))
     double offset = 0;
 
-    bool operator < (const ASSET_INFO& other) const
+    bool operator<(const ASSET_INFO &other) const
     {
-        return (offset < other.offset);
+      return (offset < other.offset);
     }
   };
   std::vector<ASSET_INFO> owned = {};
@@ -158,7 +161,7 @@ std::vector<uint16_t> random_set(
     eosio::check(iterator != entry.mints.end(), "Asset mint number not found");
 
     // Create a ASSET_INFO struct witht he mint & asset id
-    owned.push_back(ASSET_INFO { iterator->mint, nft.asset_id });
+    owned.push_back(ASSET_INFO{iterator->mint, nft.asset_id});
   }
 
   // Sort the collected & to_collect vector
@@ -172,30 +175,33 @@ std::vector<uint16_t> random_set(
   std::set_difference(to_collect.begin(), to_collect.end(), collected.begin(), collected.end(), std::inserter(remainder, remainder.begin()));
 
   // Loop over the remaining mints that are required
-  for (auto& elem : remainder)
-  { 
+  for (auto &elem : remainder)
+  {
     std::vector<ASSET_INFO> difference_map;
 
     // Loop over all the owned mints
-    for (auto it = owned.begin(); it != owned.end(); ++it ) {      
+    for (auto it = owned.begin(); it != owned.end(); ++it)
+    {
       // Get the difference between the mint owned and to
-      uint16_t const& difference = std::abs(int(it->mint - elem));
+      uint16_t const &difference = std::abs(int(it->mint - elem));
 
       // Is the difference bigger than the offset? Do not do anything
-      if (difference > config.params.mint_offset) {
+      if (difference > config.params.mint_offset)
+      {
         continue;
       }
 
       // Is the difference 0? (exact match) populate the result and exit the loop
-      if (difference == 0) {
+      if (difference == 0)
+      {
         // Clear all previous matches for this mint
         difference_map.clear();
-        difference_map.push_back(ASSET_INFO { it->mint, it->asset_id, 0 });
+        difference_map.push_back(ASSET_INFO{it->mint, it->asset_id, 0});
         break;
       }
 
       // Add it to the result
-      difference_map.push_back(ASSET_INFO { it->mint, it->asset_id, (double) difference + ((double) elem / (double)(config.params.max_mint * 10)) });
+      difference_map.push_back(ASSET_INFO{it->mint, it->asset_id, (double)difference + ((double)elem / (double)(config.params.max_mint * 10))});
     }
 
     // Skip, no match found
@@ -206,31 +212,33 @@ std::vector<uint16_t> random_set(
 
     // Sort the difference map
     std::sort(difference_map.begin(), difference_map.end());
-    auto const& match = difference_map.begin();
+    auto const &match = difference_map.begin();
 
     collected.push_back(elem);
 
     // Freeze asset
     // If already collected, do not freeze the asset
     auto it = std::find_if(collected.begin(), collected.end(), [&mint = match->mint](const int &tmp) -> bool
-                                 { return tmp == mint; });
-    if (it != collected.end()) 
+                           { return tmp == mint; });
+    if (it != collected.end())
     {
       get_frozen_assets().emplace(owner, [&](auto &row)
-                {
-                      row.asset_id = match->asset_id;
-                      row.owner = owner;
-                      row.time = eosio::current_time_point();
-                });
+                                  {
+                                    row.asset_id = match->asset_id;
+                                    row.owner = owner;
+                                    row.time = eosio::current_time_point();
+                                  });
     }
-    
+
     // Delete from mints to check
     // We remove the same mint numbers (if any) from the list
     owned.erase(std::remove_if(
-      owned.begin(), owned.end(),
-      [&mint = match->mint](const ASSET_INFO& tmp) -> bool { 
-          return tmp.mint == mint;
-      }), owned.end());
+                    owned.begin(), owned.end(),
+                    [&mint = match->mint](const ASSET_INFO &tmp) -> bool
+                    {
+                      return tmp.mint == mint;
+                    }),
+                owned.end());
   }
 
   // Update the collected mints
@@ -301,8 +309,7 @@ std::vector<uint16_t> random_set(
     @auth none
 */
 [[eosio::action]] void monkeygame::unfreeze(
-  uint64_t asset_id
-)
+    uint64_t asset_id)
 {
   maintenace_check();
 
@@ -329,8 +336,7 @@ std::vector<uint16_t> random_set(
     @auth none
 */
 [[eosio::action]] void monkeygame::unfreezeall(
-  eosio::name owner
-)
+    eosio::name owner)
 {
   maintenace_check();
 
@@ -345,7 +351,8 @@ std::vector<uint16_t> random_set(
     {
       iterator = owner_index.erase(iterator);
     }
-    else {
+    else
+    {
       iterator++;
     }
   }
