@@ -1,7 +1,4 @@
-# monkeygame
+# Match a Monkey
 
-This example is to demonstrate a basic EOSIO smart contract, including
-
-- Define contract actions
-- Define a table
-- Perform read/write/remove operations on the table
+## Testnet
+This contract is deployed on the WAX testnet, https://wax-test.bloks.io/account/bvyzsshbnkjl

@@ -3,7 +3,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::init()
+[[eosio::action]] void matchamonkey::init()
 {
     require_auth(get_self());
     get_config().remove();
@@ -16,7 +16,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::destruct()
+[[eosio::action]] void matchamonkey::destruct()
 {
     require_auth(get_self());
     get_config().remove();
@@ -31,7 +31,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::maintenance(bool maintenance)
+[[eosio::action]] void matchamonkey::maintenance(bool maintenance)
 {
     require_auth(get_self());
 
@@ -50,7 +50,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::setparams(cfg_params params)
+[[eosio::action]] void matchamonkey::setparams(cfg_params params)
 {
     require_auth(get_self());
 
@@ -71,7 +71,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::setsalt(std::string salt)
+[[eosio::action]] void matchamonkey::setsalt(std::string salt)
 {
     require_auth(get_self());
 
@@ -88,7 +88,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::rmreward(uint64_t completions)
+[[eosio::action]] void matchamonkey::rmreward(uint64_t completions)
 {
     require_auth(get_self());
 
@@ -105,7 +105,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::addreward(uint64_t completions, eosio::name contract, eosio::asset amount)
+[[eosio::action]] void matchamonkey::addreward(uint64_t completions, eosio::name contract, eosio::asset amount)
 {
     require_auth(get_self());
 
@@ -137,7 +137,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::rmmint(uint64_t index)
+[[eosio::action]] void matchamonkey::rmmint(uint64_t index)
 {
     require_auth(get_self());
 
@@ -152,7 +152,7 @@
 
     @auth self
 */
-[[eosio::action]] void monkeygame::addmint(uint64_t index, uint64_t template_id, std::vector<MINT> new_mints)
+[[eosio::action]] void matchamonkey::addmint(uint64_t index, uint64_t template_id, std::vector<MINT> new_mints)
 {
     require_auth(get_self());
     auto mints = get_mints();

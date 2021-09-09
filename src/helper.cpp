@@ -5,7 +5,7 @@ struct IncGenerator
   int operator()() { return current_++; }
 };
 
-std::vector<uint16_t> monkeygame::generate_set_with_mints()
+std::vector<uint16_t> matchamonkey::generate_set_with_mints()
 {
   auto options = get_config().get().params;
   uint16_t min = options.min_mint;
@@ -19,12 +19,12 @@ std::vector<uint16_t> monkeygame::generate_set_with_mints()
   return set;
 }
 
-void monkeygame::maintenace_check()
+void matchamonkey::maintenace_check()
 {
   eosio::check(!get_config().get().maintenance, "Game is in maintenance");
 }
 
-bool monkeygame::is_frozen(eosio::time_point time, int64_t freeze_time)
+bool matchamonkey::is_frozen(eosio::time_point time, int64_t freeze_time)
 {
   return eosio::current_time_point() >= (time + eosio::milliseconds(freeze_time));
 }

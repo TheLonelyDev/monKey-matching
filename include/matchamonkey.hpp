@@ -7,7 +7,7 @@
 #include <random.hpp>
 #include <atomicassets-interface.hpp>
 
-CONTRACT monkeygame : public eosio::contract
+CONTRACT matchamonkey : public eosio::contract
 {
 public:
     using eosio::contract::contract;
@@ -156,7 +156,7 @@ private:
     bool is_frozen(eosio::time_point time, int64_t freeze_time);
 };
 
-EOSIO_DISPATCH(monkeygame,
+EOSIO_DISPATCH(matchamonkey,
                (newgame)(verify)(complete)(unfreeze)(unfreezeall)
 
                    (init)(destruct)(maintenance)(setsalt)(setparams)

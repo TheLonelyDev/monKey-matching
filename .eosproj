@@ -1,6 +1,6 @@
 {
-  "main": "src\\monkeygame.cpp",
-  "contract": "monkeygame",
+  "main": "src\\matchamonkey.cpp",
+  "contract": "matchamonkey",
   "include": "",
   "resource": "",
   "cdt": "v1.7.0",
