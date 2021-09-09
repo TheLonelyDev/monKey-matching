@@ -1,0 +1,27 @@
+{
+    "auth": {
+        "address": "bvyzsshbnkjl",
+        "key": ""
+    },
+
+    "endpoints": {
+        "wax": "https://testnet.waxsweden.org",
+        "atomicassets": "https://test.wax.api.atomicassets.io"
+    },
+
+    "target": {
+        "contract": "bvyzsshbnkjl"
+    },
+
+    "mintsConfig": {
+        "filter": {
+            "collection_name": "bvyzsshbnkjl",
+            "schema_name": "test",
+            "burned": false,
+            "sort": "template_mint",
+            "order": "asc"
+        },
+        "minMint": 0,
+        "maxMint": 1919
+    }
+}

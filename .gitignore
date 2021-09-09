@@ -4,3 +4,7 @@
 matchamonkey.abi
 
 matchamonkey.wasm
+
+scripts/node_modules/
+
+scripts/config.json
