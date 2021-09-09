@@ -347,7 +347,7 @@ std::vector<uint16_t> random_set(
 
   while (iterator->owner == owner)
   {
-    if (!is_frozen(iterator->time, config.params.freeze_time))
+    if (is_frozen(iterator->time, config.params.freeze_time))
     {
       iterator = owner_index.erase(iterator);
     }
