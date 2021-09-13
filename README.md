@@ -73,3 +73,37 @@ This smart contract requires some data to be populated from an external source. 
   - The mint numbers are not saved as individual entries, this is due to the RAM consumption with tables. Every template is "chunked", during ingestion, into sets of x assets in order to save on RAM consumption. This method can save the contract several megabytes in RAM.
     - Every new entry uses minimal 112 bytes
     - Ref: https://github.com/EOSIO/eos/issues/4532#issuecomment-403250745
+  
+  
+  
+  Configuration wise, copy `scripts/config.example.json` to `scripts/config.json` and update
+  
+  - auth.address, the address you will be running this script with
+  - auth.key, the private key of your account (active key)
+  - endpoints, update both wax & atomicassets to the matching test or main net endpoints
+  - target.contract, the address of the contract (same as auth.address)
+  - mintsConfig.filter.collection_name, the name of the collection to filter on
+  - mintsConfig.filter.schema_name, the name of the schema to filter on
+  - mintsConfig.minMint, the minimal mint to include
+  - mintsConfig.maxMint, the max mint to include
+  
+  
+  
+  For updating the mints, run: 
+  
+  ```bash
+  cd scripts
+  yarn
+  node .\cacheMints.js
+  node .\uploadMints.js
+  ```
+  
+  For updating the salt:
+  
+  ```bash
+  cd scripts
+  yarn
+  node .\salt.js
+  ```
+  
+  
