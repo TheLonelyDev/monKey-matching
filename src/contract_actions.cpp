@@ -178,3 +178,27 @@
                      });
     }
 }
+
+/*
+    Resets the account of an user, both user account and current game.
+
+    @auth self
+*/
+[[eosio::action]] void matchamonkey::resetuser(eosio::name user)
+{
+    require_auth(get_self());
+
+    auto games = get_games();
+    auto game_itr = games.find(user.value);
+
+    if (game_itr != games.end()) {
+        games.erase(game_itr);
+    }
+
+    auto users = get_users();
+    auto user_itr = users.find(user.value);
+
+    if (user_itr != users.end()) {
+        users.erase(user_itr);
+    }
+}

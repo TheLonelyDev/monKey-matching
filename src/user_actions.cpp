@@ -29,7 +29,7 @@ std::vector<uint16_t> random_set(
                      _input.begin(), _input.end(),
                      [&val = val, &offset = offset](const auto &tmp) -> bool
                      {
-                       return tmp <= val + offset && tmp >= val - offset;
+                       return tmp <= val + (offset * 2) && tmp >= val - (offset * 2);
                      }),
                  _input.end());
 
@@ -58,7 +58,7 @@ std::vector<uint16_t> random_set(
 [[eosio::action]] void matchamonkey::newgame(eosio::name owner)
 {
   eosio::require_auth(owner);
-  maintenace_check();
+  maintenace_check(owner);
 
   auto games = get_games();
   auto users = get_users();
@@ -119,7 +119,7 @@ std::vector<uint16_t> random_set(
 [[eosio::action]] void matchamonkey::verify(eosio::name owner, std::vector<NFT> owned_assets)
 {
   eosio::require_auth(owner);
-  maintenace_check();
+  maintenace_check(owner);
 
   auto games = get_games();
   auto users = get_users();
@@ -149,7 +149,7 @@ std::vector<uint16_t> random_set(
     assets.require_find(nft.asset_id, "You do not own all assets");
     mints.require_find(nft.index, "Mint index not found");
 
-    unfreeze(nft.asset_id);
+    unfreeze(owner, nft.asset_id);
 
     auto entry = mints.get(nft.index);
 
@@ -262,7 +262,7 @@ std::vector<uint16_t> random_set(
 [[eosio::action]] void matchamonkey::complete(eosio::name owner)
 {
   eosio::require_auth(owner);
-  maintenace_check();
+  maintenace_check(owner);
 
   auto games = get_games();
   auto users = get_users();
@@ -306,12 +306,14 @@ std::vector<uint16_t> random_set(
     @throws Will throw if the contract is in maintenace
     @throws Will throw if asset canot be unfrozen
 
-    @auth none
+    @auth caller
 */
 [[eosio::action]] void matchamonkey::unfreeze(
+    eosio::name owner,
     uint64_t asset_id)
 {
-  maintenace_check();
+  require_auth(owner);
+  maintenace_check(owner);
 
   auto config = get_config().get();
   auto frozen_assets = get_frozen_assets();
@@ -333,12 +335,13 @@ std::vector<uint16_t> random_set(
 
     @throws Will throw if the contract is in maintenace
 
-    @auth none
+    @auth caller
 */
 [[eosio::action]] void matchamonkey::unfreezeall(
     eosio::name owner)
 {
-  maintenace_check();
+  require_auth(owner);
+  maintenace_check(owner);
 
   auto config = get_config().get();
   auto frozen_assets = get_frozen_assets();

@@ -21,6 +21,7 @@ public:
         uint16_t mint_offset = 1;
         int64_t freeze_time = 86400000;
         std::string reward_memo = "Set completion reward";
+        std::vector<eosio::name> whitelist = {};
     };
 
     struct NFT
@@ -52,7 +53,7 @@ public:
     [[eosio::action]] void newgame(eosio::name owner);
     [[eosio::action]] void verify(eosio::name owner, std::vector<NFT> owned_assets);
     [[eosio::action]] void complete(eosio::name owner);
-    [[eosio::action]] void unfreeze(uint64_t asset_id);
+    [[eosio::action]] void unfreeze(eosio::name owner, uint64_t asset_id);
     [[eosio::action]] void unfreezeall(eosio::name owner);
 
     [[eosio::action]] void init();
@@ -66,6 +67,8 @@ public:
 
     [[eosio::action]] void rmreward(uint64_t completions);
     [[eosio::action]] void addreward(uint64_t completions, eosio::name contract, eosio::asset amount);
+
+    [[eosio::action]] void resetuser(eosio::name usser);
 
 private:
     struct [[eosio::table("config")]] _config_entity
@@ -149,7 +152,7 @@ private:
         return _frozen_assets(get_self(), get_self().value);
     }
 
-    void maintenace_check();
+    void maintenace_check(eosio::name user);
 
     std::vector<uint16_t> generate_set_with_mints();
 
@@ -159,7 +162,7 @@ private:
 EOSIO_DISPATCH(matchamonkey,
                (newgame)(verify)(complete)(unfreeze)(unfreezeall)
 
-                   (init)(destruct)(maintenance)(setsalt)(setparams)
+                   (init)(destruct)(maintenance)(setsalt)(setparams)(resetuser)
 
                        (rmmint)(addmint)
 
