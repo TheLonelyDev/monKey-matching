@@ -1,6 +1,7 @@
 const { getApi } = require('./utils/api');
 const config = require('./config.json');
 const cache = require('./mint.cache.json');
+const fetch = require('node-fetch');
 
 const groups = {};
 
@@ -32,41 +33,46 @@ for (const key in groups) {
 };
 console.log(`Chunked data into ${chunks.length} chunks`);
 
-const api = getApi(config.endpoints.wax, config.auth.key);
-const action = async ({ template_id, mints }, index) => api.transact({
-    actions: [{
-        account: config.target.contract,
-        name: 'addmint',
+let endpoints = [];
 
-        authorization: [{
-            actor: config.auth.address,
-            permission: 'active',
-        }],
+const action = async ({ template_id, mints }, index) => {
+    const endpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
+    console.log('Using endpoint', endpoint);
+    const api = getApi(endpoint, config.auth.key);
 
-        data: {
-            index,
-            template_id: template_id,
-            new_mints: mints,
-        },
-    }]
-}, {
-    blocksBehind: 3,
-    expireSeconds: 30,
-});
+    return api.transact({
+        actions: [{
+            account: config.target.contract,
+            name: 'addmint',
+    
+            authorization: [{
+                actor: config.auth.address,
+                permission: 'active',
+            }],
+    
+            data: {
+                index,
+                template_id: template_id,
+                new_mints: mints,
+            },
+        }]
+    }, {
+        blocksBehind: 3,
+        expireSeconds: 30,
+    });
+};
 
 (async () => {
+    endpoints = config.endpoints.wax ?? (await fetch('http://waxmonitor.cmstats.net/api/endpoints?format=json&type=api').then(x => x.json())).filter(({ weight }) => weight > 5).map(({ node_url }) => node_url);
+    console.log('Got endpoints', endpoints);
+
     const softStart = 0;
-    let i = 1;
-    for (const chunk of chunks) {
-        if (i < softStart) {
-            i++;
-            continue;
-        }
 
-        console.log(`Saving chunk ${i}`);
+    for (let index = softStart; index < chunks.length; index) {
+        console.log('Saving chunk', index);
 
-        await action(chunk, i)
-            .then(() => i++)
+        await action(chunks[index], index)
+            .then(() => index++)
             .catch(x => console.log('Got error, retrying', x));
     }
 })();

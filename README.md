@@ -80,7 +80,7 @@ This smart contract requires some data to be populated from an external source. 
   
   - auth.address, the address you will be running this script with
   - auth.key, the private key of your account (active key)
-  - endpoints, update both wax & atomicassets to the matching test or main net endpoints
+  - endpoints, update both wax & atomicassets to the matching test or main net endpoints; leave undefined to get an automatic list of endpoints
   - target.contract, the address of the contract (same as auth.address)
   - mintsConfig.filter.collection_name, the name of the collection to filter on
   - mintsConfig.filter.schema_name, the name of the schema to filter on
