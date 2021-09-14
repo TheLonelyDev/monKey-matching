@@ -174,6 +174,8 @@ std::vector<uint16_t> random_set(
   std::vector<uint16_t> remainder;
   std::set_difference(to_collect.begin(), to_collect.end(), collected.begin(), collected.end(), std::inserter(remainder, remainder.begin()));
 
+  auto frozen_assets = get_frozen_assets();
+
   // Loop over the remaining mints that are required
   for (auto &elem : remainder)
   {
@@ -218,17 +220,12 @@ std::vector<uint16_t> random_set(
 
     // Freeze asset
     // If already collected, do not freeze the asset
-    auto it = std::find_if(collected.begin(), collected.end(), [&mint = match->mint](const int &tmp) -> bool
-                           { return tmp == mint; });
-    if (it != collected.end())
-    {
-      get_frozen_assets().emplace(owner, [&](auto &row)
-                                  {
-                                    row.asset_id = match->asset_id;
-                                    row.owner = owner;
-                                    row.time = eosio::current_time_point();
-                                  });
-    }
+    frozen_assets.emplace(owner, [&](auto &row)
+                                {
+                                  row.asset_id = match->asset_id;
+                                  row.owner = owner;
+                                  row.time = eosio::current_time_point();
+                                });
 
     // Delete from mints to check
     // We remove the same mint numbers (if any) from the list
