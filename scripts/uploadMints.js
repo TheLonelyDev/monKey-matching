@@ -32,30 +32,41 @@ for (const key in groups) {
 };
 console.log(`Chunked data into ${chunks.length} chunks`);
 
+const api = getApi(config.endpoints.wax, config.auth.key);
+const action = async ({ template_id, mints }, index) => api.transact({
+    actions: [{
+        account: config.target.contract,
+        name: 'addmint',
+
+        authorization: [{
+            actor: config.auth.address,
+            permission: 'active',
+        }],
+
+        data: {
+            index,
+            template_id: template_id,
+            new_mints: mints,
+        },
+    }]
+}, {
+    blocksBehind: 3,
+    expireSeconds: 30,
+});
+
 (async () => {
-    const api = getApi(config.endpoints.wax, config.auth.key);
+    const softStart = 0;
     let i = 1;
     for (const chunk of chunks) {
+        if (i < softStart) {
+            i++;
+            continue;
+        }
+
         console.log(`Saving chunk ${i}`);
-        await api.transact({
-            actions: [{
-                account: config.target.contract,
-                name: 'addmint',
 
-                authorization: [{
-                    actor: config.auth.address,
-                    permission: 'active',
-                }],
-
-                data: {
-                    index: i++,
-                    template_id: chunk.template_id,
-                    new_mints: chunk.mints,
-                },
-            }]
-        }, {
-            blocksBehind: 3,
-            expireSeconds: 30,
-        });
+        await action(chunk, i)
+            .then(() => i++)
+            .catch(x => console.log('Got error, retrying', x));
     }
 })();
