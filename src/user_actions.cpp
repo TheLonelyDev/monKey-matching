@@ -46,12 +46,12 @@ std::vector<uint16_t> random_set(
 }
 
 /*
-    Creates a new game. Randomizes the set using config.salt, caller and amount of completed sets.
+    Creates a new game. Randomizes the set using config.salt, caller and amount of completed sets. Allows rengeration of the set depending on config.params.regeneration_cd
 
     RAM costs are paid by the caller.
 
     @throws Will throw if the contract is in maintenace
-    @throws Will throw if the user has a game running
+    @throws Will throw if the user has a game running and the mints cannot be regenerated
 
     @auth caller
 */
@@ -65,7 +65,11 @@ std::vector<uint16_t> random_set(
   auto config = get_config().get();
   auto game = games.find(owner.value);
 
-  eosio::check(game == games.end(), "You already have a game running");
+  if (game != games.end()) {
+    // Has a game, check if it can be regenerated or not
+    eosio::check(eosio::current_time_point() >= (game->time + eosio::milliseconds(config.params.regeneration_cd)), "Cannot regenerate your game yet");
+    games.erase(game);
+  }
 
   // Get or create the user
   auto user = users.find(owner.value);
@@ -102,6 +106,7 @@ std::vector<uint16_t> random_set(
                   row.owner = owner;
                   row.to_collect.assign(result.begin(), result.end()); // Assigns the generated set
                   row.collected = {};
+                  row.time = eosio::current_time_point();
                 });
 }
 
