@@ -20,6 +20,7 @@ public:
         uint16_t max_mint = 105;
         uint16_t mint_offset = 1;
         int64_t freeze_time = 86400000;
+        int64_t regeneration_cd = 259200000;
         std::string reward_memo = "Set completion reward";
         std::vector<eosio::name> whitelist = {};
     };
@@ -84,6 +85,7 @@ private:
         eosio::name owner;
         std::vector<uint16_t> to_collect = {};
         std::vector<uint16_t> collected = {};
+        eosio::time_point time;
 
         uint64_t primary_key() const { return owner.value; };
     };
