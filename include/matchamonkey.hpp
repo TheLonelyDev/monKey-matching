@@ -22,7 +22,6 @@ public:
         int64_t freeze_time = 86400000;
         int64_t regeneration_cd = 259200000;
         std::string reward_memo = "Set completion reward";
-        std::vector<eosio::name> whitelist = {};
     };
 
     struct NFT
@@ -156,7 +155,7 @@ private:
         return _frozen_assets(get_self(), get_self().value);
     }
 
-    void maintenace_check(eosio::name user);
+    void maintenace_check();
 
     std::vector<uint16_t> generate_set_with_mints();
 

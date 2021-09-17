@@ -19,11 +19,10 @@ std::vector<uint16_t> matchamonkey::generate_set_with_mints()
   return set;
 }
 
-void matchamonkey::maintenace_check(eosio::name user)
+void matchamonkey::maintenace_check()
 {
   auto config = get_config().get();
   eosio::check(!config.maintenance, "Contract is in maintenance");
-  eosio::check(std::find(config.params.whitelist.begin(), config.params.whitelist.end(), user) != config.params.whitelist.end(), "User is not whitelisted");
 }
 
 bool matchamonkey::is_frozen(eosio::time_point time, int64_t freeze_time)
