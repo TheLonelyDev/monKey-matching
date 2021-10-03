@@ -1,19 +1,20 @@
-# Match a Monkey
+# Match a Monkey / monKey matching
 
+> Play monkeyMatching at https://match.cryptomonkeys.com/ to earn cryptomonKeys! Generate a list of random mint numbers, then connect with other collectors and trade your cards to find the perfect mints to complete your list and earn the exclusive MNKY token. Redeem your tokens in the shop for free cryptomonKeys!
+>
 
-
-| Component     | Testnet                                        | Mainnet |
-| ------------- | ---------------------------------------------- | ------- |
-| Contract name | bvyzsshbnkjl                                   |         |
-| Bloks.io      | https://wax-test.bloks.io/account/bvyzsshbnkjl |         |
-| Game          | https://monkeymatching.netlify.app/            |         |
-|               |                                                |         |
+| Component      | Test net                                                     | Main net                                                  | Source                                         |
+| -------------- | ------------------------------------------------------------ | --------------------------------------------------------- | ---------------------------------------------- |
+| Contract name  | [bvyzsshbnkjl](https://wax-test.bloks.io/account/bvyzsshbnkjl) | [monkeysmatch](https://wax.bloks.io/account/monkeysmatch) | https://github.com/TheLonelyDev/Match-A-Monkey |
+| Game UI        |                                                              | https://match.cryptomonkeys.cc/                           |                                                |
+| Token contract | [wfqzrtsviwdq](https://wax-test.bloks.io/account/wfqzrtsviwdq) | [monkeystoken](https://wax.bloks.io/account/monkeystoken) | https://github.com/TheLonelyDev/monkeytoken    |
+| Shop contract  | [xummfxbitlwa](https://wax-test.bloks.io/account/xummfxbitlwa) | [monkeymarket](https://wax.bloks.io/account/monkeymarket) | https://github.com/TheLonelyDev/niftyshopper   |
 
 ## Actions
 
 | Action name | Description                                                  | Scope/authorization |
 | ----------- | ------------------------------------------------------------ | ------------------- |
-| newgame     | Create a new game based on parameters set in the contract's config. Generates a random set of mints to collect. | owner (invoker)     |
+| newgame     | Create a new game based on parameters set in the contract's config. Generates a random set of mints to collect.<br /><br />Users can regenerate their game after a certain amount of time, see regeneration_cd. | owner (invoker)     |
 | verify      | Verifies the supplied assets based on the the parameters set in the contract's config and the generated random mints. | owner (invoker)     |
 | complete    | Complete the game after verifying your assets. Upon successful completion you will receive a reward based on the rewards configured in the "rewards" table. | owner (invoker)     |
 | unfreeze    | Unfreeze a certain asset, the time an asset is frozen depends on the contract's config. **Cleans up the RAM used by playing this asset.** | none                |
@@ -32,15 +33,16 @@
 
 The contract is mainly configured through the `setparams` action. For rewards refer to the next section.
 
-| Key           | Default               | Description                                                  |
-| ------------- | --------------------- | ------------------------------------------------------------ |
-| new_game_base | 2                     | The amount of mints will be based on new_game_base^completions. This will make it so that games follow the following pattern of mints for a config value of 2: 2, 4, 8, 16, 32, 64, ... |
-| reward_cap    | 6                     | When a player reaches the highest level/completions defined in the "rewards" table then fall back to this level for rewards. |
-| min_mint      | 6                     | The min mint number to be generated in the game. (Inclusive) |
-| max_mint      | 105                   | The max mint number to be generated in the game. (Inclusive) |
-| mint_offset   | 1                     | The distance or offset between mints when verifying your assets. When set to 1 this always people to collect #18, #19 or #20 when their target is #19. When set to 0 the mints must be an exact match. |
-| freeze_time   | 86400000              | How long an asset should be frozen, in seconds.              |
-| reward_memo   | Set completion reward | The memo used in the FT transfer when a game is completed.   |
+| Key             | Default               | Description                                                  |
+| --------------- | --------------------- | ------------------------------------------------------------ |
+| new_game_base   | 2                     | The amount of mints will be based on new_game_base^completions. This will make it so that games follow the following pattern of mints for a config value of 2: 2, 4, 8, 16, 32, 64, ... |
+| reward_cap      | 6                     | When a player reaches the highest level/completions defined in the "rewards" table then fall back to this level for rewards. |
+| min_mint        | 6                     | The min mint number to be generated in the game. (Inclusive) |
+| max_mint        | 105                   | The max mint number to be generated in the game. (Inclusive) |
+| mint_offset     | 1                     | The distance or offset between mints when verifying your assets. When set to 1 this always people to collect #18, #19 or #20 when their target is #19. When set to 0 the mints must be an exact match. |
+| freeze_time     | 86400000              | How long an asset should be frozen, in seconds.              |
+| regeneration_cd | 259200000             | Define after how long can a game be regenerated, in seconds. |
+| reward_memo     | Set completion reward | The memo used in the FT transfer when a game is completed.   |
 
 ## Rewards config
 
