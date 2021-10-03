@@ -1,4 +1,4 @@
-# Match a Monkey / monKey matching
+# monKey matching
 
 > Play monkeyMatching at https://match.cryptomonkeys.com/ to earn cryptomonKeys! Generate a list of random mint numbers, then connect with other collectors and trade your cards to find the perfect mints to complete your list and earn the exclusive MNKY token. Redeem your tokens in the shop for free cryptomonKeys!
 >
