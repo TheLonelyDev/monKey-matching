@@ -284,18 +284,39 @@ std::vector<uint16_t> random_set(
 
   auto config = get_config().get();
   auto rewards = get_rewards();
-  auto reward = rewards.require_find(user->completed_sets > 8 ? config.params.reward_cap : user->completed_sets, "No reward found");
 
-  action(
-      permission_level{get_self(), name("active")},
-      reward->contract,
-      name("transfer"),
-      make_tuple(
-          get_self(),
-          owner,
-          reward->amount,
-          config.params.reward_memo))
-      .send();
+  auto reward = rewards.require_find(user->completed_sets > rewards.rbegin()->completions ? config.params.reward_cap : user->completed_sets, "No reward found");
+
+  // Get the contract's balance of the token
+  auto contract_balance = eosiotoken::get_balance(reward->contract, get_self(), reward->amount.symbol.code());
+
+  if (contract_balance >= reward->amount)
+  {
+    // We have enough to send
+    eosio::action(
+        permission_level{get_self(), name("active")},
+        reward->contract,
+        eosio::name("transfer"),
+        make_tuple(
+            get_self(),
+            owner,
+            reward->amount,
+            config.params.reward_memo))
+        .send();
+  }
+  else
+  {
+    // Need to issue new tokens
+    eosio::action(
+        permission_level{get_self(), name("active")},
+        reward->contract,
+        eosio::name("issue"),
+        make_tuple(
+            owner,
+            reward->amount,
+            config.params.reward_memo))
+        .send();
+  }
 
   // Release the game entry
   games.erase(game);

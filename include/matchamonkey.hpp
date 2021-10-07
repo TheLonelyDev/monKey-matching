@@ -6,6 +6,7 @@
 
 #include <random.hpp>
 #include <atomicassets-interface.hpp>
+#include <eosio.token.hpp>
 
 CONTRACT matchamonkey : public eosio::contract
 {
