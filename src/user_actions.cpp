@@ -86,12 +86,12 @@ std::vector<uint16_t> random_set(
   auto salt = config.salt;
   salt.append("-").append(owner.to_string());
   salt.append("-").append(std::to_string(user->completed_sets));
+  salt.append("-").append(std::to_string(eosio::current_time_point().time_since_epoch().count()));
 
   // Randomize
   std::vector<uint16_t> result = random_set(
       // Init a random_generator based on config.salt, owner and completed sets
       random(eosio::sha256(salt.c_str(), salt.length())),
-      //random_generator(owner.to_string().append("-" + std::to_string(user->completed_sets))),
 
       // Generates a vector containing all the possible mints
       generate_set_with_mints(),
