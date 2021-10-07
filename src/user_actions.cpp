@@ -65,7 +65,8 @@ std::vector<uint16_t> random_set(
   auto config = get_config().get();
   auto game = games.find(owner.value);
 
-  if (game != games.end()) {
+  if (game != games.end())
+  {
     // Has a game, check if it can be regenerated or not
     eosio::check(eosio::current_time_point() >= (game->time + eosio::milliseconds(config.params.regeneration_cd)), "Cannot regenerate your game yet");
     games.erase(game);
@@ -226,11 +227,11 @@ std::vector<uint16_t> random_set(
     // Freeze asset
     // If already collected, do not freeze the asset
     frozen_assets.emplace(owner, [&](auto &row)
-                                {
-                                  row.asset_id = match->asset_id;
-                                  row.owner = owner;
-                                  row.time = eosio::current_time_point();
-                                });
+                          {
+                            row.asset_id = match->asset_id;
+                            row.owner = owner;
+                            row.time = eosio::current_time_point();
+                          });
 
     // Delete from mints to check
     // We remove the same mint numbers (if any) from the list
