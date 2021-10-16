@@ -69,7 +69,9 @@ public:
     [[eosio::action]] void rmreward(uint64_t completions);
     [[eosio::action]] void addreward(uint64_t completions, eosio::name contract, eosio::asset amount);
 
-    [[eosio::action]] void resetuser(eosio::name usser);
+    [[eosio::action]] void resetuser(eosio::name user);
+
+    [[eosio::action]] void log(std::string action, std::vector<uint16_t> data);
 
 private:
     struct [[eosio::table("config")]] _config_entity
@@ -166,7 +168,7 @@ private:
 EOSIO_DISPATCH(matchamonkey,
                (newgame)(verify)(complete)(unfreeze)(unfreezeall)
 
-                   (init)(destruct)(maintenance)(setsalt)(setparams)(resetuser)
+                   (init)(destruct)(maintenance)(setsalt)(setparams)(resetuser)(log)
 
                        (rmmint)(addmint)
 

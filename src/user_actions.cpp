@@ -109,6 +109,16 @@ std::vector<uint16_t> random_set(
                   row.collected = {};
                   row.time = eosio::current_time_point();
                 });
+
+  eosio::action(
+        permission_level{get_self(), eosio::name("active")},
+        get_self(),
+        eosio::name("log"),
+        std::make_tuple(
+          std::string("newgame"),
+          result
+        )
+    ).send();
 }
 
 /*
@@ -294,7 +304,7 @@ std::vector<uint16_t> random_set(
   {
     // We have enough to send
     eosio::action(
-        permission_level{get_self(), name("active")},
+        permission_level{get_self(), eosio::name("active")},
         reward->contract,
         eosio::name("transfer"),
         make_tuple(
@@ -308,7 +318,7 @@ std::vector<uint16_t> random_set(
   {
     // Need to issue new tokens
     eosio::action(
-        permission_level{get_self(), name("active")},
+        permission_level{get_self(), eosio::name("active")},
         reward->contract,
         eosio::name("issue"),
         make_tuple(
@@ -317,6 +327,28 @@ std::vector<uint16_t> random_set(
             config.params.reward_memo))
         .send();
   }
+
+  // Log completed to_collect
+  eosio::action(
+        permission_level{get_self(), eosio::name("active")},
+        get_self(),
+        eosio::name("log"),
+        std::make_tuple(
+            std::string("completed_to_collect"),
+            game->to_collect
+        )
+    ).send();
+
+  // Log completed mints
+    eosio::action(
+        permission_level{get_self(), eosio::name("active")},
+        get_self(),
+        eosio::name("log"),
+        std::make_tuple(
+            std::string("completed_collected"),
+            game->collected
+        )
+    ).send();
 
   // Release the game entry
   games.erase(game);

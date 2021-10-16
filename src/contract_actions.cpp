@@ -204,3 +204,13 @@
         users.erase(user_itr);
     }
 }
+
+/*
+    Used for logging actions on chain, does not do anything else.
+
+    @auth self
+*/
+[[eosio::action]] void matchamonkey::log(std::string action, std::vector<uint16_t> data)
+{
+    require_auth(get_self());
+}
