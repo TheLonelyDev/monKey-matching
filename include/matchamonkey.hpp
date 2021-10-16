@@ -102,7 +102,8 @@ private:
         uint64_t secondary_key_0() const { return completed_sets; };
     };
     typedef eosio::multi_index<eosio::name("users"), _user_entity,
-        eosio::indexed_by<"completed"_n, const_mem_fun<_user_entity, uint64_t, &_user_entity::secondary_key_0>>> _users;
+                               eosio::indexed_by<"completed"_n, const_mem_fun<_user_entity, uint64_t, &_user_entity::secondary_key_0>>>
+        _users;
 
     struct [[eosio::table("rewards")]] _reward_entity
     {

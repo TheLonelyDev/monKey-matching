@@ -111,14 +111,13 @@ std::vector<uint16_t> random_set(
                 });
 
   eosio::action(
-        permission_level{get_self(), eosio::name("active")},
-        get_self(),
-        eosio::name("log"),
-        std::make_tuple(
+      permission_level{get_self(), eosio::name("active")},
+      get_self(),
+      eosio::name("log"),
+      std::make_tuple(
           std::string("newgame"),
-          result
-        )
-    ).send();
+          result))
+      .send();
 }
 
 /*
@@ -330,25 +329,23 @@ std::vector<uint16_t> random_set(
 
   // Log completed to_collect
   eosio::action(
-        permission_level{get_self(), eosio::name("active")},
-        get_self(),
-        eosio::name("log"),
-        std::make_tuple(
-            std::string("completed_to_collect"),
-            game->to_collect
-        )
-    ).send();
+      permission_level{get_self(), eosio::name("active")},
+      get_self(),
+      eosio::name("log"),
+      std::make_tuple(
+          std::string("completed_to_collect"),
+          game->to_collect))
+      .send();
 
   // Log completed mints
-    eosio::action(
-        permission_level{get_self(), eosio::name("active")},
-        get_self(),
-        eosio::name("log"),
-        std::make_tuple(
-            std::string("completed_collected"),
-            game->collected
-        )
-    ).send();
+  eosio::action(
+      permission_level{get_self(), eosio::name("active")},
+      get_self(),
+      eosio::name("log"),
+      std::make_tuple(
+          std::string("completed_collected"),
+          game->collected))
+      .send();
 
   // Release the game entry
   games.erase(game);
