@@ -37,8 +37,9 @@ The contract is mainly configured through the `setparams` action. For rewards re
 | --------------- | --------------------- | ------------------------------------------------------------ |
 | new_game_base   | 2                     | The amount of mints will be based on new_game_base^completions. This will make it so that games follow the following pattern of mints for a config value of 2: 2, 4, 8, 16, 32, 64, ... |
 | reward_cap      | 6                     | When a player reaches the highest level/completions defined in the "rewards" table then fall back to this level for rewards. |
-| min_mint        | 6                     | The min mint number to be generated in the game. (Inclusive) |
-| max_mint        | 105                   | The max mint number to be generated in the game. (Inclusive) |
+| reward_reset    | 16                    | Resets the user back to level 0 after reaching this level.   |
+| min_mint        | 20                    | The min mint number to be generated in the game. (Inclusive) |
+| max_mint        | 1919                  | The max mint number to be generated in the game. (Inclusive) |
 | mint_offset     | 1                     | The distance or offset between mints when verifying your assets. When set to 1 this always people to collect #18, #19 or #20 when their target is #19. When set to 0 the mints must be an exact match. |
 | freeze_time     | 86400000              | How long an asset should be frozen, in seconds.              |
 | regeneration_cd | 259200000             | Define after how long can a game be regenerated, in seconds. |

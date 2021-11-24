@@ -9,12 +9,12 @@
 std::vector<uint16_t> random_set(
     random generator,
     std::vector<uint16_t> input,
-    uint16_t amount = 1,
+    uint64_t amount = 1,
     uint16_t offset = 0)
 {
   std::vector<uint16_t> _input(input);
   int size = _input.size();
-  uint16_t _amount = std::min<uint16_t>(amount, size);
+  uint64_t _amount = std::min<uint64_t>(amount, size);
 
   std::vector<uint16_t> result = {};
 
@@ -81,6 +81,13 @@ std::vector<uint16_t> random_set(
                   { row.owner = owner; });
 
     user = users.find(owner.value);
+  } 
+  else if (user->completed_sets >= config.params.reward_reset)
+  {
+    // Reset completed sets to 0
+    users.modify(user, owner, [&](auto &row)
+               { row.completed_sets = 0; });
+
   }
 
   // Determine the next mints
@@ -97,7 +104,7 @@ std::vector<uint16_t> random_set(
       // Generates a vector containing all the possible mints
       generate_set_with_mints(),
 
-      pow(config.params.new_game_base, user->completed_sets + 1),
+      pow<uint64_t>(config.params.new_game_base, std::min<uint16_t>(63, user->completed_sets + 1)),
 
       config.params.mint_offset);
 
@@ -276,6 +283,7 @@ std::vector<uint16_t> random_set(
   eosio::require_auth(owner);
   maintenace_check();
 
+  auto config = get_config().get();
   auto games = get_games();
   auto users = get_users();
   auto game = games.require_find(owner.value, "You have no running game");
@@ -289,42 +297,45 @@ std::vector<uint16_t> random_set(
 
   // Update the user
   users.modify(user, owner, [&](auto &row)
-               { row.completed_sets = user->completed_sets + 1; });
+               { row.completed_sets = std::min<uint64_t>(user->completed_sets + 1, config.params.reward_reset); });
 
-  auto config = get_config().get();
   auto rewards = get_rewards();
 
   auto reward = rewards.require_find(user->completed_sets > rewards.rbegin()->completions ? config.params.reward_cap : user->completed_sets, "No reward found");
 
-  // Get the contract's balance of the token
-  auto contract_balance = eosiotoken::get_balance(reward->contract, get_self(), reward->amount.symbol.code());
+  if (reward->amount.amount > 0)
+  {
+    // Can send a reward
+    // Get the contract's balance of the token
+    auto contract_balance = eosiotoken::get_balance(reward->contract, get_self(), reward->amount.symbol.code());
 
-  if (contract_balance >= reward->amount)
-  {
-    // We have enough to send
-    eosio::action(
-        permission_level{get_self(), eosio::name("active")},
-        reward->contract,
-        eosio::name("transfer"),
-        make_tuple(
-            get_self(),
-            owner,
-            reward->amount,
-            config.params.reward_memo))
-        .send();
-  }
-  else
-  {
-    // Need to issue new tokens
-    eosio::action(
-        permission_level{get_self(), eosio::name("active")},
-        reward->contract,
-        eosio::name("issue"),
-        make_tuple(
-            owner,
-            reward->amount,
-            config.params.reward_memo))
-        .send();
+    if (contract_balance >= reward->amount)
+    {
+      // We have enough to send
+      eosio::action(
+          permission_level{get_self(), eosio::name("active")},
+          reward->contract,
+          eosio::name("transfer"),
+          make_tuple(
+              get_self(),
+              owner,
+              reward->amount,
+              config.params.reward_memo))
+          .send();
+    }
+    else
+    {
+      // Need to issue new tokens
+      eosio::action(
+          permission_level{get_self(), eosio::name("active")},
+          reward->contract,
+          eosio::name("issue"),
+          make_tuple(
+              owner,
+              reward->amount,
+              config.params.reward_memo))
+          .send();
+    }
   }
 
   // Log completed to_collect

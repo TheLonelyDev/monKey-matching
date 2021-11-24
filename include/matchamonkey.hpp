@@ -17,12 +17,13 @@ public:
     {
         uint16_t new_game_base = 2;
         uint16_t reward_cap = 6;
-        uint16_t min_mint = 6;
-        uint16_t max_mint = 105;
+        uint16_t reward_reset = 16;
+        uint16_t min_mint = 20;
+        uint16_t max_mint = 1919;
         uint16_t mint_offset = 1;
         int64_t freeze_time = 86400000;
         int64_t regeneration_cd = 259200000;
-        std::string reward_memo = "Set completion reward";
+        std::string reward_memo = "Monkeymatching set completion reward";
     };
 
     struct NFT
